@@ -81,8 +81,8 @@ class VisualLoraPicker:
             }
         }
 
-    RETURN_TYPES = ("STRING", AlwaysEqualProxy('*'))
-    RETURN_NAMES = ("full_path", "lora_name")
+    RETURN_TYPES = (AlwaysEqualProxy('*'), "STRING")
+    RETURN_NAMES = ("full_lora_name", "lora_name")
     FUNCTION = "process"
     CATEGORY = "Utils"
     OUTPUT_NODE = True
