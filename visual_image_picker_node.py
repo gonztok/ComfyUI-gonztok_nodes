@@ -60,11 +60,11 @@ class VisualImagePicker:
     def INPUT_TYPES(s):
         return {
             "required": {
+                "folder_path": ("STRING", {"default": DEFAULT_ASSETS}),
                 "selected_image": ("STRING", {"default": ""}),
                 "sort_method": (["name_asc", "name_desc", "newest_first", "oldest_first", "recently_modified", "oldest_modified"], {"default": "newest_first"}),
             },
             "optional": {
-                "folder_path": ("STRING", {"default": DEFAULT_ASSETS}),
                 "opt_folder_path": ("STRING", {"forceInput": True}),
             }
         }
