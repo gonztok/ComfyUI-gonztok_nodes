@@ -94,4 +94,4 @@ class VisualLoraPicker:
             return ("", "")
             
         full_path = os.path.join(final_path, selected_lora)
-        return (full_path, os.path.splitext(selected_lora)[0])[cite: 2]
+        return (full_path, os.path.splitext(selected_lora)[0])
