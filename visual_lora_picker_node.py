@@ -93,5 +93,18 @@ class VisualLoraPicker:
         if not selected_lora: 
             return ("", "")
             
-        full_path = os.path.join(final_path, selected_lora)
-        return (full_path, os.path.splitext(selected_lora)[0])
+        absolute_file_path = os.path.normpath(os.path.join(final_path, selected_lora))
+        
+        lora_roots = folder_paths.get_folder_paths("loras")
+        
+        relative_path = selected_lora # Fallback
+        
+        for root in lora_roots:
+            abs_root = os.path.abspath(root)
+            if absolute_file_path.lower().startswith(abs_root.lower()):
+                relative_path = os.path.relpath(absolute_file_path, abs_root)
+                break
+        
+        relative_path = relative_path.replace("\\", "/")
+                
+        return (relative_path, os.path.splitext(selected_lora)[0])
