@@ -46,7 +46,30 @@ app.registerExtension({
         const gridColl = $el("div.vlp-collapse", [gridView]);
         const btnGrid = $el("button.vlp-btn", { textContent: "LORA COLLECTION ▼" });
 
-        const fit = () => node.setSize([node.size[0], node.computeSize()[1]]);
+        let fitRafId;
+        let domWidget;
+
+        const fit = () => {
+            if (!domWidget) return;
+            // Temporarily set height:auto so flex children are NOT constrained by
+            // LiteGraph's previous container size, then read the true content height.
+            container.style.height = "auto";
+            const h = container.scrollHeight;
+            container.style.height = h + "px";
+            domWidget.computeSize = () => [node.size[0], h];
+            node.setSize([node.size[0], node.computeSize()[1]]);
+            app.graph.setDirtyCanvas(true, true);
+        };
+
+        const animateFit = (duration = 420) => {
+            const end = performance.now() + duration;
+            cancelAnimationFrame(fitRafId);
+            const tick = (now) => {
+                fit();
+                if (now < end) fitRafId = requestAnimationFrame(tick);
+            };
+            fitRafId = requestAnimationFrame(tick);
+        };
 
         const update = () => {
             const path = pathWidget?.value;
@@ -145,12 +168,12 @@ app.registerExtension({
         window.addEventListener("wheel", handleWheel, { capture: true, passive: false });
 
 
-        btnPrev.onclick = () => { previewColl.classList.toggle("open"); update(); setTimeout(fit, 310); };
+        btnPrev.onclick = () => { previewColl.classList.toggle("open"); update(); animateFit(); };
         btnGrid.onclick = () => {
             const open = gridColl.classList.toggle("open");
             btnGrid.innerHTML = `<span>BROWSE COLLECTION</span><span>${open?'✕':'⧉'}</span>`;
             if (open && pathWidget?.value) node.loadLoras();
-            setTimeout(fit, 310);
+            animateFit();
         };
 
         node.loadLoras = async () => {
@@ -192,14 +215,16 @@ app.registerExtension({
             } catch (e) {
                 gridView.innerHTML = `<div class="vlp-msg"><span>🚫</span><span>Access error</span></div>`;
             }
+            fit();
         };
 
         const container = $el("div.vlp-container", [btnPrev, previewColl, btnGrid, gridColl]);
-        node.addDOMWidget("lora_picker_ui", "div", container);
+        domWidget = node.addDOMWidget("lora_picker_ui", "div", container);
 
         node.onConfigure = () => { update(); if (pathWidget?.value) node.loadLoras(); fit(); };
         
         node.onRemoved = function() {
+            cancelAnimationFrame(fitRafId);
             cleanupWatcher();
             window.removeEventListener("wheel", handleWheel, { capture: true });
             if (this._vip_watcher) clearInterval(this._vip_watcher);
