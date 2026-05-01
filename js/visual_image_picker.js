@@ -33,7 +33,31 @@ app.registerExtension({
         const gridColl = $el("div.vip-collapse", [gridView]);
         const btnGrid = $el("button.vip-btn", { textContent: "GALLERY ▼" });
 
-        const fit = () => node.setSize([node.size[0], node.computeSize()[1]]);
+        let fitRafId;
+
+        const fit = () => {
+            if (!domWidget) return;
+            // Temporarily set height:auto so flex children are NOT constrained by
+            // LiteGraph's previous container size, then read the true content height.
+            // scrollHeight correctly reflects the CSS max-height transition on
+            // vip-collapse elements, so this also drives smooth open/close animation.
+            container.style.height = "auto";
+            const h = container.scrollHeight;
+            container.style.height = h + "px";
+            domWidget.computeSize = () => [node.size[0], h];
+            node.setSize([node.size[0], node.computeSize()[1]]);
+            app.graph.setDirtyCanvas(true, true);
+        };
+
+        const animateFit = (duration = 420) => {
+            const end = performance.now() + duration;
+            cancelAnimationFrame(fitRafId);
+            const tick = (now) => {
+                fit();
+                if (now < end) fitRafId = requestAnimationFrame(tick);
+            };
+            fitRafId = requestAnimationFrame(tick);
+        };
 
         const update = () => {
             const path = pathWidget?.value;
@@ -99,12 +123,12 @@ app.registerExtension({
             }
         };
 
-        btnPrev.onclick = () => { previewColl.classList.toggle("open"); update(); setTimeout(fit, 310); };
+        btnPrev.onclick = () => { previewColl.classList.toggle("open"); update(); animateFit(); };
         btnGrid.onclick = () => {
             const open = gridColl.classList.toggle("open");
             btnGrid.innerHTML = `<span>BROWSE COLLECTION</span><span>${open?'✕':'⧉'}</span>`;
             if (open && !gridView.innerHTML && pathWidget?.value) node.loadImages();
-            setTimeout(fit, 310);
+            animateFit();
         };
 
         if (pathWidget) {
@@ -137,7 +161,7 @@ app.registerExtension({
         window.addEventListener("wheel", handleWheel, { capture: true, passive: false });
 
         const container = $el("div.vip-container", [btnPrev, previewColl, btnGrid, gridColl]);
-        node.addDOMWidget("visualimagepicker_grid", "div", container);
+        const domWidget = node.addDOMWidget("visualimagepicker_grid", "div", container);
 
         node.loadImages = async () => {
             const path = pathWidget?.value;
@@ -175,9 +199,10 @@ app.registerExtension({
                     if (imgWidget?.value === f) item.classList.add("selected");
                     gridView.appendChild(item);
                 });
-            } catch (e) { 
-                gridView.innerHTML = `<div class="vip-msg"><span>🚫</span><span>Access error</span></div>`; 
+            } catch (e) {
+                gridView.innerHTML = `<div class="vip-msg"><span>🚫</span><span>Access error</span></div>`;
             }
+            fit();
         };
 
         node.onConfigure = () => { 
@@ -187,8 +212,9 @@ app.registerExtension({
         };
         
         node.onRemoved = () => {
+            cancelAnimationFrame(fitRafId);
             window.removeEventListener("wheel", handleWheel, { capture: true });
-            if (this._vip_watcher) clearInterval(this._vip_watcher);
+            if (node._vip_watcher) clearInterval(node._vip_watcher);
         };
         
         node.size = [350, 180];
