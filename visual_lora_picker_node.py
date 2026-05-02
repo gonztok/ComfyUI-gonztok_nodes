@@ -97,7 +97,7 @@ class VisualLoraPicker:
         
         lora_roots = folder_paths.get_folder_paths("loras")
         
-        relative_path = selected_lora # Fallback
+        relative_path = selected_lora
         
         for root in lora_roots:
             abs_root = os.path.abspath(root)

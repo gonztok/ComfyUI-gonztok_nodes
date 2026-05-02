@@ -70,40 +70,46 @@ class VisualImagePicker:
         }
 
     RETURN_TYPES = ("IMAGE", "STRING", "STRING")
-    RETURN_NAMES = ("image", "filename", "extension")
+    RETURN_NAMES = ("images", "filenames", "extensions")
+    OUTPUT_IS_LIST = (True, True, True)
     FUNCTION = "main_process"
     CATEGORY = "Utils"
     OUTPUT_NODE = True
 
     def main_process(self, selected_image, sort_method, folder_path=DEFAULT_ASSETS, opt_folder_path=None):
         active_path = opt_folder_path if opt_folder_path is not None else folder_path
-        
         if not active_path or not os.path.exists(active_path):
             active_path = DEFAULT_ASSETS
 
-        if not selected_image or not selected_image.strip():
-            files = [f for f in glob.glob(os.path.join(active_path, "*.*")) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp'))]
-            if not files: raise ValueError(f"Directory {active_path} is empty or contains no valid images")
-            selected_image = os.path.basename(max(files, key=os.path.getctime))
+        selected_files = [f.strip() for f in selected_image.split("|||") if f.strip()]
 
-        image_path = os.path.join(active_path, selected_image)
-        
-        if not os.path.exists(image_path):
-            files = [f for f in glob.glob(os.path.join(active_path, "*.*")) if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp'))]
-            if files:
-                image_path = max(files, key=os.path.getctime)
-                selected_image = os.path.basename(image_path)
-            else:
-                raise ValueError(f"Image not found: {selected_image}")
+        if not selected_files:
+            return ([], [], [])
 
-        img = node_helpers.pillow(Image.open, image_path)
-        file_name_no_ext, file_extension = os.path.splitext(selected_image)
-        file_extension = file_extension.lstrip('.')
+        image_list = []
+        name_list = []
+        ext_list = []
 
-        output_images = []
-        for frame in ImageSequence.Iterator(img):
-            frame = node_helpers.pillow(ImageOps.exif_transpose, frame).convert("RGB")
-            tensor = torch.from_numpy(np.array(frame).astype(np.float32) / 255.0)[None,]
-            output_images.append(tensor)
+        for file_name in selected_files:
+            image_path = os.path.join(active_path, file_name)
+            if not os.path.exists(image_path):
+                continue
+            
+            img = node_helpers.pillow(Image.open, image_path)
+            base_name, ext = os.path.splitext(file_name)
+            
+            frames = []
+            for frame in ImageSequence.Iterator(img):
+                frame = node_helpers.pillow(ImageOps.exif_transpose, frame).convert("RGB")
+                tensor = torch.from_numpy(np.array(frame).astype(np.float32) / 255.0)[None,]
+                frames.append(tensor)
+            
+            if frames:
+                image_list.append(torch.cat(frames, dim=0))
+                name_list.append(base_name)
+                ext_list.append(ext.lstrip('.'))
 
-        return (torch.cat(output_images, dim=0), file_name_no_ext, file_extension)
+        if not image_list:
+            raise ValueError("No valid images selected")
+
+        return (image_list, name_list, ext_list)
