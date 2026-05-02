@@ -1,8 +1,7 @@
 # ComfyUI-gonztok_nodes
 # 🎨 ComfyUI Visual Picker Suite
 
-A set of custom nodes for **ComfyUI** designed to replace clunky text inputs with a high-performance, visual interface for managing directories, images, and LoRAs. I made these with the objective of enhance App Mode experience, and they have only been tested on Nodes 2.0.
-
+A set of custom nodes for **ComfyUI** designed to replace clunky text inputs with a high-performance, visual interface for selecting directories, images, and LoRAs. I made these with the objective of enhancing App Mode experience.
 ---
 
 ## 🛠️ The Node Trio
@@ -20,7 +19,7 @@ Workflow mode | App mode
 <img width="500" alt="image" src="https://github.com/user-attachments/assets/52f1266c-d6f5-453d-b147-61039da8356b" /> | <img width="150" alt="image" src="https://github.com/user-attachments/assets/79beac6c-be00-443d-b3ce-55bad1d3de85" />
 
 ### 🖼️ Visual Image Picker
-A premium gallery for asset selection.
+A premium gallery for asset selection. Multiselection is enabled using a small toggle, or you can hold CTRL while clicking on the images.
 *   **Core Logic**: `visual_image_picker_node.py`
 *   **Interface**: `visual_image_picker.js`
 *   **Interactive Grid**: Features a high-speed image grid with custom sorting (Newest, Oldest, Name, etc.).
@@ -30,7 +29,8 @@ A premium gallery for asset selection.
 
 Workflow mode | App mode
 --- | ---
-<img width="500" alt="image" src="https://github.com/user-attachments/assets/f1a57641-956e-4fae-927c-2885720698ea" /> | <img width="150" alt="image" src="https://github.com/user-attachments/assets/3a592e0a-9c6f-4158-a70b-1493788ff77f" />
+<img width="500" alt="image" src="https://github.com/user-attachments/assets/21186370-cdd5-4e47-a685-e675b8cf244c" /> | <img width="150" alt="image" src="https://github.com/user-attachments/assets/5f568381-af03-46f3-93e7-1bdbd44d53b9" />
+
 
 ### 🧬 Visual LoRA Picker
 Visual cataloging for your model library.
@@ -43,7 +43,8 @@ Visual cataloging for your model library.
 
 Workflow mode | App mode
 --- | ---
-<img width="500" alt="image" src="https://github.com/user-attachments/assets/2a57b042-ecee-4fbf-94d4-0290a7d9c62d" /> | <img width="150" alt="image" src="https://github.com/user-attachments/assets/f115cd13-2c05-4eb1-9835-1db073e73298" />
+<img width="500" alt="image" src="https://github.com/user-attachments/assets/c72b9102-b33a-465b-9085-c64d4a096826" /> | <img width="150" alt="image" src="https://github.com/user-attachments/assets/db77d8e6-a73f-4c6d-8583-2d85465f2bc6" />
+
 ---
 
 ## 🔗 Dynamic Synergy (Master & Slave Logic)
@@ -59,7 +60,7 @@ The true power of this suite lies in how the nodes communicate.
 
 Workflow mode | App mode
 --- | ---
-<img width="500" alt="image" src="https://github.com/user-attachments/assets/39dff49c-c42d-4f19-aec6-d2e696639fe1" /> | <img width="150" alt="image" src="https://github.com/user-attachments/assets/f9fbb105-73df-480e-98f5-f646edf7a802" />
+<img width="500" alt="image" src="https://github.com/user-attachments/assets/86a9b0d5-0439-40a3-9776-fd9e5a805d57" /> | <img width="150" alt="image" src="https://github.com/user-attachments/assets/f9fbb105-73df-480e-98f5-f646edf7a802" />
 
 ---
 
