@@ -51,8 +51,6 @@ app.registerExtension({
 
         const fit = () => {
             if (!domWidget) return;
-            // Temporarily set height:auto so flex children are NOT constrained by
-            // LiteGraph's previous container size, then read the true content height.
             container.style.height = "auto";
             const h = container.scrollHeight;
             container.style.height = h + "px";
@@ -103,26 +101,32 @@ app.registerExtension({
         };
 
         node.onConnectionsChange = function (type, index, connected, link_info) {
-            if (type === 1) {
+            const inputName = this.inputs[index]?.name;
+            if (type === 1 && inputName === "opt_folder_path") {
                 cleanupWatcher();
 
                 if (connected && link_info) {
                     node._vlp_conn_timeout = setTimeout(() => {
                         const link = app.graph.links[link_info.id];
                         if (!link) return;
+                        
                         const originNode = app.graph.getNodeById(link.origin_id);
-                        if (!originNode) return;
+                        if (!originNode || !originNode.widgets || originNode.widgets.length === 0) {
+                            setTimeout(() => node.onConnectionsChange(type, index, connected, link_info), 100);
+                            return;
+                        }
 
-                        const originWidget = originNode.widgets?.find(w => w.name === "folder_path") || originNode.widgets?.[0];
+                        const originWidget = originNode.widgets.find(w => w.name === "folder_path") || originNode.widgets[0];
                         if (!originWidget) return;
 
                         node._vlp_origin_widget = originWidget;
                         if (!originWidget._vlp_old_cb) originWidget._vlp_old_cb = originWidget.callback;
 
                         const sync = (newVal) => {
-                            if (pathWidget && pathWidget.value !== newVal) {
+                            if (pathWidget && newVal && pathWidget.value !== newVal) {
                                 pathWidget.value = newVal;
                                 if (pathWidget.callback) pathWidget.callback(newVal);
+                                if (node.loadLoras) node.loadLoras(); 
                             }
                         };
 
@@ -134,7 +138,7 @@ app.registerExtension({
 
                         node._vlp_watcher = setInterval(() => sync(originWidget.value), 250);
                         sync(originWidget.value);
-                    }, 200);
+                    }, 300);
                 }
             }
         };
@@ -221,8 +225,21 @@ app.registerExtension({
         const container = $el("div.vlp-container", [btnPrev, previewColl, btnGrid, gridColl]);
         domWidget = node.addDOMWidget("lora_picker_ui", "div", container);
 
-        node.onConfigure = () => { update(); if (pathWidget?.value) node.loadLoras(); fit(); };
-        
+        node.onConfigure = function() {
+            if (update) update.apply(this);
+
+            const hasWidgetValue = !!pathWidget?.value;
+            const input = this.inputs?.find(i => i.name === "opt_folder_path");
+            const hasLink = input && input.link !== null;
+
+            if (hasWidgetValue || hasLink) {
+                setTimeout(() => {
+                    this.loadLoras();
+                    if (fit) fit.apply(this);
+                }, 50);
+            }
+        };        
+
         node.onRemoved = function() {
             cancelAnimationFrame(fitRafId);
             cleanupWatcher();

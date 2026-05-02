@@ -147,11 +147,15 @@ app.registerExtension({
             if (type === 1) {
                 clearSync();
                 if (connected && link_info) {
-                    setTimeout(() => {
+                    node._vip_conn_timeout = setTimeout(() => {
                         const link = app.graph.links[link_info.id];
                         if (!link) return;
                         const originNode = app.graph.getNodeById(link.origin_id);
-                        if (!originNode) return;
+                        
+                        if (!originNode || !originNode.widgets || originNode.widgets.length === 0) {
+                            setTimeout(() => node.onConnectionsChange(type, index, connected, link_info), 100);
+                            return;
+                        }
 
                         const originWidget = originNode.widgets?.find(w => w.name === "folder_path") || originNode.widgets?.[0];
                         if (!originWidget) return;
@@ -160,9 +164,10 @@ app.registerExtension({
                         node._vip_old_cb = originWidget.callback;
 
                         const sync = (newVal) => {
-                            if (pathWidget.value !== newVal) {
+                            if (pathWidget && newVal && pathWidget.value !== newVal) {
                                 pathWidget.value = newVal;
                                 if (pathWidget.callback) pathWidget.callback(newVal);
+                                if (node.loadImages && gridColl.classList.contains("open")) node.loadImages();
                             }
                         };
 
@@ -174,7 +179,7 @@ app.registerExtension({
 
                         node._vip_watcher = setInterval(() => sync(originWidget.value), 250);
                         sync(originWidget.value);
-                    }, 200);
+                    }, 300);
                 }
             }
         };
@@ -199,6 +204,14 @@ app.registerExtension({
                 fit();
             };
         }
+
+        if (sortWidget) {
+            const oldSortCb = sortWidget.callback;
+            sortWidget.callback = function() {
+                if (oldSortCb) oldSortCb.apply(this, arguments);
+                if (gridColl.classList.contains("open")) node.loadImages();
+            };
+        }        
 
         const handleWheel = (e) => {
             if (gridView.contains(e.target)) {
@@ -267,7 +280,24 @@ app.registerExtension({
             fit();
         };
 
-        node.onConfigure = () => { update(); if (pathWidget?.value) node.loadImages(); fit(); };
+        node.onConfigure = function() {
+            const input = this.inputs?.find(i => i.name === "opt_folder_path") || this.inputs?.[0];
+            const hasLink = input && input.link !== null;
+
+            if (pathWidget?.value || hasLink) {
+                setTimeout(() => {
+                    update(); 
+                    if (pathWidget?.value && gridColl.classList.contains("open")) {
+                        node.loadImages();
+                    }
+                    fit();
+                }, 100); 
+            } else {
+                update();
+                fit();
+            }
+        };
+
         node.onRemoved = () => {
             cancelAnimationFrame(fitRafId);
             window.removeEventListener("wheel", handleWheel, { capture: true });
