@@ -3,6 +3,14 @@
 
 A set of custom nodes for **ComfyUI** designed to replace clunky text inputs with a high-performance, visual interface for selecting directories, images, and LoRAs. I made these with the objective of enhancing App Mode experience.
 ---
+What's new:  
+v1.2.0.
+*  Added modal popups for image and lora picker.   
+  The modal button:  
+    <img width="500" alt="image" src="https://github.com/user-attachments/assets/f1afb4dd-8442-49d1-97f1-b047f12f2bde" />  
+  The modal popup:  
+    <img width="500" alt="image" src="https://github.com/user-attachments/assets/96638961-25d2-4958-af5f-763a3387111d" />
+
 
 ## 🛠️ The Node Trio
 
