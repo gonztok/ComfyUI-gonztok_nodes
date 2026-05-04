@@ -14,6 +14,8 @@ if (!document.getElementById(styleId)) {
             .vfp-header:hover { background: #222; }
             .vfp-path-display { font-size:10px; color:#00b4ff; font-family:monospace; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight: bold; }
             .vfp-grid { display:flex; flex-direction:column; gap:0px; padding:0px; max-height:300px; overflow-y:auto; background:#0f0f0f; transition: max-height 0.3s ease-in-out; }
+            .vfp-grid::-webkit-scrollbar{width:12px}
+            .vfp-grid::-webkit-scrollbar-thumb{background:#00b4ff;border-radius:6px;border:3px solid #0f0f0f}
             .vfp-container.is-collapsed .vfp-grid { max-height: 0px; display: none; }                
             .vfp-item { padding:10px 15px; background:#1a1a1a; cursor:pointer; color:#ccc; font-family:monospace; font-size:11px; display:flex; align-items:center; user-select:none; border-bottom:1px solid #222; }
             .vfp-item:hover { background:#252525; color:#00b4ff; }

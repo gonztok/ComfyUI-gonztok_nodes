@@ -11,11 +11,12 @@ app.registerExtension({
         if (nodeData.name !== NODE_NAME) return;
 
         $el("style", {
-            textContent: `.vip-container{display:flex;flex-direction:column;background:#111;border:1px solid #222;border-radius:8px;overflow:hidden;box-shadow:0 4px 15px rgba(0,0,0,.5);font-family: "Segoe UI Emoji", "Segoe UI Symbol", "Apple Color Emoji", "Noto Color Emoji", sans-serif;}.vip-collapse{overflow:hidden;transition:all .4s cubic-bezier(.25,1,.5,1);max-height:0;opacity:0}.vip-collapse.open{max-height:800px;opacity:1}.vip-preview-area{background:#080808;border-bottom:1px solid #222;display:flex;flex-direction:column;height:320px}.vip-preview{position:relative;flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden}.vip-preview img{max-width:100%;max-height:100%;object-fit:contain;transition:transform .4s cubic-bezier(.25,1,.5,1);will-change:transform}.vip-thumb-row{display:none;gap:4px;padding:0 12px 12px;justify-content:center;background:#080808;flex-shrink:0}.vip-thumb-item{position:relative;width:50px;height:50px;border:1px solid #333;border-radius:4px;overflow:hidden;background:#111}.vip-thumb-item img{width:100%;height:100%;object-fit:cover}.vip-thumb-more{position:absolute;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;color:#00b4ff;font-size:12px;font-weight:bold;letter-spacing:1px}.vip-overlay{position:absolute;bottom:-1px;left:0;right:0;z-index:2;padding:35px 12px 12px;background:linear-gradient(to top,rgba(0,0,0,1) 0%,rgba(0,0,0,.9) 20%,transparent 100%);color:#fff;font-size:10px;letter-spacing:.5px;text-transform:uppercase;pointer-events:none;transform:translateZ(0)}.vip-btn{background:#1a1a1a;color:#aaa;border:none;padding:10px;cursor:pointer;font-size:9px;font-weight:600;letter-spacing:1px;transition:all .2s ease;text-align:left;display:flex;justify-content:space-between;width:100%;align-items:center;height:32px;box-sizing:border-box}.vip-btn:hover{background:#252525;color:#00b4ff}.vip-btn.active{color:#00b4ff;background:#1e2a30}.vip-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px;padding:12px;min-height:150px;max-height:300px;overflow-y:auto;background:#0f0f0f;align-content:start;position:relative}.vip-grid::-webkit-scrollbar{width:4px}.vip-grid::-webkit-scrollbar-thumb{background:#333;border-radius:2px}.vip-item{position:relative;width:100%;aspect-ratio:1/1;background:#1a1a1a;cursor:pointer;border:2px solid transparent;border-radius:4px;overflow:hidden;display:flex;align-items:center;justify-content:center;user-select:none;-webkit-user-drag:none;}.vip-item img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;}.vip-item:hover{filter:grayscale(0);transform:translateY(-2px)}.vip-item.selected{border-color:#00b4ff;box-shadow:0 0 8px rgba(0,180,255,.4)}.vip-msg{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#888;font-size:14px;padding:60px 20px;text-align:center;font-weight:500;letter-spacing:1px;text-transform:uppercase}.vip-bar-wrapper{position:relative;display:flex;align-items:center;height:32px;background:#1a1a1a}.vip-multi-toggle{position:absolute;right:32px;top:5px;bottom:0;width:28px;background:none;border:none;color:#555;cursor:pointer;font-size:12px;transition:all .2s;z-index:10;display:flex;align-items:center;justify-content:center;padding:0}.vip-multi-toggle.active{color:#00b4ff;text-shadow:0 0 5px rgba(0,180,255,.5)}.vip-multi-toggle:hover{color:#eee}.vip-icon-span{display:flex;align-items:center;justify-content:center;width:20px;height:100%}
+            textContent: `.vip-container{display:flex;flex-direction:column;background:#111;border:1px solid #222;border-radius:8px;overflow:hidden;box-shadow:0 4px 15px rgba(0,0,0,.5);font-family: "Segoe UI Emoji", "Segoe UI Symbol", "Apple Color Emoji", "Noto Color Emoji", sans-serif;}.vip-collapse{overflow:hidden;transition:all .4s cubic-bezier(.25,1,.5,1);max-height:0;opacity:0}.vip-collapse.open{max-height:800px;opacity:1}.vip-preview-area{background:#080808;border-bottom:1px solid #222;display:flex;flex-direction:column;height:320px}.vip-preview{position:relative;flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden}.vip-preview img{max-width:100%;max-height:100%;object-fit:contain;transition:transform .4s cubic-bezier(.25,1,.5,1);will-change:transform}.vip-thumb-row{display:none;gap:4px;padding:0 12px 12px;justify-content:center;background:#080808;flex-shrink:0}.vip-thumb-item{position:relative;width:50px;height:50px;border:1px solid #333;border-radius:4px;overflow:hidden;background:#111}.vip-thumb-item img{width:100%;height:100%;object-fit:cover}.vip-thumb-more{position:absolute;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;color:#00b4ff;font-size:12px;font-weight:bold;letter-spacing:1px}.vip-overlay{position:absolute;bottom:-1px;left:0;right:0;z-index:2;padding:35px 12px 12px;background:linear-gradient(to top,rgba(0,0,0,1) 0%,rgba(0,0,0,.9) 20%,transparent 100%);color:#fff;font-size:10px;letter-spacing:.5px;text-transform:uppercase;pointer-events:none;transform:translateZ(0)}.vip-btn{background:#1a1a1a;color:#aaa;border:none;padding:10px;cursor:pointer;font-size:9px;font-weight:600;letter-spacing:1px;transition:all .2s ease;text-align:left;display:flex;justify-content:space-between;width:100%;align-items:center;height:32px;box-sizing:border-box}.vip-btn:hover{background:#252525;color:#00b4ff}.vip-btn.active{color:#00b4ff;background:#1e2a30}.vip-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px;padding:12px;min-height:150px;max-height:300px;overflow-y:auto;background:#0f0f0f;align-content:start;position:relative}.vip-grid::-webkit-scrollbar{width:12px}.vip-grid::-webkit-scrollbar-thumb{background:#00b4ff;border-radius:6px;border:3px solid #0f0f0f}.vip-item{position:relative;width:100%;aspect-ratio:1/1;background:#1a1a1a;cursor:pointer;border:2px solid transparent;border-radius:4px;overflow:hidden;display:flex;align-items:center;justify-content:center;user-select:none;-webkit-user-drag:none;}.vip-item img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;}.vip-item:hover{filter:grayscale(0);transform:translateY(-2px)}.vip-item.selected{border-color:#00b4ff;box-shadow:0 0 8px rgba(0,180,255,.4)}.vip-msg{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#888;font-size:14px;padding:60px 20px;text-align:center;font-weight:500;letter-spacing:1px;text-transform:uppercase}.vip-bar-wrapper{position:relative;display:flex;align-items:center;height:32px;background:#1a1a1a}.vip-multi-toggle{position:absolute;right:32px;top:5px;bottom:0;width:28px;background:none;border:none;color:#555;cursor:pointer;font-size:12px;transition:all .2s;z-index:10;display:flex;align-items:center;justify-content:center;padding:0}.vip-multi-toggle.active{color:#00b4ff;text-shadow:0 0 5px rgba(0,180,255,.5)}.vip-multi-toggle:hover{color:#eee}.vip-icon-span{display:flex;align-items:center;justify-content:center;width:20px;height:100%}
             .vip-modal-btn{position:absolute;top:5px;right:5px;height:30px;width:30px;background:#333;color:#fff;border-radius:3px;border:none;cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;z-index:10}.vip-modal-btn:hover{background:#00b4ff}
             .vip-modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:10000}
             .vip-modal-box{width: 85%; height: 85%;background:#1a1a1a;padding:25px;border:2px solid #00b4ff;border-radius:10px;box-shadow:0 0 20px rgba(0,180,255,0.3);color:#fff;font-size:14px;font-weight:bold;display:flex;flex-direction:column;gap:15px}
             .vip-modal-grid-wrapper{ width: 100%; overflow-y: auto; border-top: 1px solid #333; padding-top: 10px; flex: 1; }
+            .vip-modal-grid-wrapper::-webkit-scrollbar{width:12px}.vip-modal-grid-wrapper::-webkit-scrollbar-thumb{background:#00b4ff;border-radius:6px;border:3px solid #1a1a1a}
             .vip-modal-footer{display:flex; gap:10px; padding-top:10px; border-top:1px solid #333; justify-content: flex-end;}
             .vip-footer-btn{background:#2a2a2a; color:#aaa; border:1px solid #444; padding:8px 20px; border-radius:4px; cursor:pointer; font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; transition: all 0.2s;}
             .vip-footer-btn:hover{background:#333; color:#fff; border-color:#666;}
@@ -34,6 +35,7 @@ app.registerExtension({
         const sortWidget = node.widgets.find(w => w.name === "sort_method");
 
         let multiSelectEnabled = false;
+        const MOVE_THRESHOLD = 10;
 
         const previewImg = $el("img");
         const previewLab = $el("div.vip-overlay", { textContent: "No selection" });
@@ -82,8 +84,17 @@ app.registerExtension({
                 item._filename = originalItem._filename;
 
                 let pressTimer;
+                let startX, startY;
+                let holdFlag = false;
+
                 const startPress = (e) => {
+                    holdFlag = false;
+                    const pos = e.touches ? e.touches[0] : e;
+                    startX = pos.clientX;
+                    startY = pos.clientY;
+
                     pressTimer = setTimeout(() => {
+                        holdFlag = true;
                         if (!multiSelectEnabled) {
                             multiSelectEnabled = true;
                             btnMulti.classList.add("active");
@@ -94,15 +105,33 @@ app.registerExtension({
                         syncModalHighlights();
                     }, 500);
                 };
-                const cancelPress = () => clearTimeout(pressTimer);
+
+                const checkMove = (e) => {
+                    if (!pressTimer) return;
+                    const pos = e.touches ? e.touches[0] : e;
+                    const dx = Math.abs(pos.clientX - startX);
+                    const dy = Math.abs(pos.clientY - startY);
+                    if (dx > MOVE_THRESHOLD || dy > MOVE_THRESHOLD) {
+                        clearTimeout(pressTimer);
+                        pressTimer = null;
+                    }
+                };
+
+                const cancelPress = () => { clearTimeout(pressTimer); pressTimer = null; };
 
                 item.onmousedown = startPress;
                 item.ontouchstart = startPress;
+                item.onmousemove = checkMove;
+                item.ontouchmove = checkMove;
                 item.onmouseup = cancelPress;
                 item.ontouchend = cancelPress;
                 item.onmouseleave = cancelPress;
 
                 item.onclick = (e) => {
+                    if (holdFlag) {
+                        holdFlag = false;
+                        return;
+                    }
                     if (originalItem) originalItem.onclick(e);
                     if (!multiSelectEnabled && !e.ctrlKey && !e.metaKey) {
                         modalOverlay.remove();
@@ -336,8 +365,17 @@ app.registerExtension({
                     
                     item._filename = f;
                     let pressTimer;
+                    let startX, startY;
+                    let holdFlag = false;
+
                     const startPress = (e) => {
+                        holdFlag = false;
+                        const pos = e.touches ? e.touches[0] : e;
+                        startX = pos.clientX;
+                        startY = pos.clientY;
+
                         pressTimer = setTimeout(() => {
+                            holdFlag = true;
                             if (!multiSelectEnabled) {
                                 multiSelectEnabled = true;
                                 btnMulti.classList.add("active");
@@ -345,11 +383,36 @@ app.registerExtension({
                             item.onclick(e);
                         }, 500);
                     };
-                    const cancelPress = () => clearTimeout(pressTimer);
+
+                    const checkMove = (e) => {
+                        if (!pressTimer) return;
+                        const pos = e.touches ? e.touches[0] : e;
+                        const dx = Math.abs(pos.clientX - startX);
+                        const dy = Math.abs(pos.clientY - startY);
+                        if (dx > MOVE_THRESHOLD || dy > MOVE_THRESHOLD) {
+                            clearTimeout(pressTimer);
+                            pressTimer = null;
+                        }
+                    };
+
+                    const cancelPress = () => { clearTimeout(pressTimer); pressTimer = null; };
+
                     item.onmousedown = startPress;
                     item.ontouchstart = startPress;
+                    item.onmousemove = checkMove;
+                    item.ontouchmove = checkMove;
                     item.onmouseup = cancelPress;
                     item.ontouchend = cancelPress;
+                    item.onmouseleave = cancelPress;
+
+                    const originalOnclick = item.onclick;
+                    item.onclick = (e) => {
+                        if (holdFlag) {
+                            holdFlag = false;
+                            return;
+                        }
+                        originalOnclick(e);
+                    };
 
                     if (currentSelections.includes(f)) item.classList.add("selected");
                     gridView.appendChild(item);

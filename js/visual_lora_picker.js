@@ -20,8 +20,8 @@ app.registerExtension({
                 .vlp-btn{background:#1a1a1a;color:#aaa;border:none;padding:10px;cursor:pointer;font-size:9px;font-weight:600;letter-spacing:1px;display:flex;justify-content:space-between}
                 .vlp-btn:hover{background:#252525;color:#00b4ff}
                 .vlp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px;padding:12px;max-height:300px;overflow-y:auto;background:#0f0f0f;position:relative}
-                .vlp-grid::-webkit-scrollbar{width:4px}
-                .vlp-grid::-webkit-scrollbar-thumb{background:#333;border-radius:2px}
+                .vlp-grid::-webkit-scrollbar{width:12px}
+                .vlp-grid::-webkit-scrollbar-thumb{background:#00b4ff;border-radius:6px;border:3px solid #0f0f0f}
                 .vlp-item{position:relative;aspect-ratio:1/1;background:#1a1a1a;cursor:pointer;border:2px solid transparent;border-radius:4px;overflow:hidden}
                 .vlp-item img{width:100%;height:100%;object-fit:cover}
                 .vlp-item.selected{border-color:#00b4ff;box-shadow:0 0 8px rgba(0,180,255,.4)}
@@ -32,7 +32,9 @@ app.registerExtension({
                 .vlp-modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:10000}
                 .vlp-modal-box{width: 80%; height: 80%;background:#1a1a1a;padding:30px;border:2px solid #00b4ff;border-radius:10px;box-shadow:0 0 20px rgba(0,180,255,0.3);color:#fff;font-size:14px;font-weight:bold;display:flex;flex-direction:column;align-items:center;gap:15px}
                 .vlp-modal-box img{max-width:80vw;max-height:50vh;object-fit:contain;border-radius:4px}
-                .vlp-modal-grid-wrapper{ width: 100%; overflow: hidden; border-top: 1px solid #333; padding-top: 10px; }
+                .vlp-modal-grid-wrapper{ width: 100%; overflow-y: auto; border-top: 1px solid #333; padding-top: 10px; }
+                .vlp-modal-grid-wrapper::-webkit-scrollbar{width:12px}
+                .vlp-modal-grid-wrapper::-webkit-scrollbar-thumb{background:#00b4ff;border-radius:6px;border:3px solid #1a1a1a}
                 .vlp-modal-box .vlp-overlay{ font-size:12px; }
             `,
             parent: document.head,
