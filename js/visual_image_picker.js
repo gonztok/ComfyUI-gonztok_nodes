@@ -11,7 +11,16 @@ app.registerExtension({
         if (nodeData.name !== NODE_NAME) return;
 
         $el("style", {
-            textContent: `.vip-container{display:flex;flex-direction:column;background:#111;border:1px solid #222;border-radius:8px;overflow:hidden;box-shadow:0 4px 15px rgba(0,0,0,.5);font-family: "Segoe UI Emoji", "Segoe UI Symbol", "Apple Color Emoji", "Noto Color Emoji", sans-serif;}.vip-collapse{overflow:hidden;transition:all .4s cubic-bezier(.25,1,.5,1);max-height:0;opacity:0}.vip-collapse.open{max-height:800px;opacity:1}.vip-preview-area{background:#080808;border-bottom:1px solid #222;display:flex;flex-direction:column;height:320px}.vip-preview{position:relative;flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden}.vip-preview img{max-width:100%;max-height:100%;object-fit:contain;transition:transform .4s cubic-bezier(.25,1,.5,1);will-change:transform}.vip-thumb-row{display:none;gap:4px;padding:0 12px 12px;justify-content:center;background:#080808;flex-shrink:0}.vip-thumb-item{position:relative;width:50px;height:50px;border:1px solid #333;border-radius:4px;overflow:hidden;background:#111}.vip-thumb-item img{width:100%;height:100%;object-fit:cover}.vip-thumb-more{position:absolute;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;color:#00b4ff;font-size:12px;font-weight:bold;letter-spacing:1px}.vip-overlay{position:absolute;bottom:-1px;left:0;right:0;z-index:2;padding:35px 12px 12px;background:linear-gradient(to top,rgba(0,0,0,1) 0%,rgba(0,0,0,.9) 20%,transparent 100%);color:#fff;font-size:10px;letter-spacing:.5px;text-transform:uppercase;pointer-events:none;transform:translateZ(0)}.vip-btn{background:#1a1a1a;color:#aaa;border:none;padding:10px;cursor:pointer;font-size:9px;font-weight:600;letter-spacing:1px;transition:all .2s ease;text-align:left;display:flex;justify-content:space-between;width:100%;align-items:center;height:32px;box-sizing:border-box}.vip-btn:hover{background:#252525;color:#00b4ff}.vip-btn.active{color:#00b4ff;background:#1e2a30}.vip-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px;padding:12px;min-height:150px;max-height:300px;overflow-y:auto;background:#0f0f0f;align-content:start;position:relative}.vip-grid::-webkit-scrollbar{width:4px}.vip-grid::-webkit-scrollbar-thumb{background:#333;border-radius:2px}.vip-item{position:relative;width:100%;aspect-ratio:1/1;background:#1a1a1a;cursor:pointer;border:2px solid transparent;border-radius:4px;overflow:hidden;display:flex;align-items:center;justify-content:center}.vip-item img{width:100%;height:100%;object-fit:cover;display:block}.vip-item:hover{filter:grayscale(0);transform:translateY(-2px)}.vip-item.selected{border-color:#00b4ff;box-shadow:0 0 8px rgba(0,180,255,.4)}.vip-msg{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#888;font-size:14px;padding:60px 20px;text-align:center;font-weight:500;letter-spacing:1px;text-transform:uppercase}.vip-bar-wrapper{position:relative;display:flex;align-items:center;height:32px;background:#1a1a1a}.vip-multi-toggle{position:absolute;right:32px;top:5px;bottom:0;width:28px;background:none;border:none;color:#555;cursor:pointer;font-size:12px;transition:all .2s;z-index:10;display:flex;align-items:center;justify-content:center;padding:0}.vip-multi-toggle.active{color:#00b4ff;text-shadow:0 0 5px rgba(0,180,255,.5)}.vip-multi-toggle:hover{color:#eee}.vip-icon-span{display:flex;align-items:center;justify-content:center;width:20px;height:100%}`,
+            textContent: `.vip-container{display:flex;flex-direction:column;background:#111;border:1px solid #222;border-radius:8px;overflow:hidden;box-shadow:0 4px 15px rgba(0,0,0,.5);font-family: "Segoe UI Emoji", "Segoe UI Symbol", "Apple Color Emoji", "Noto Color Emoji", sans-serif;}.vip-collapse{overflow:hidden;transition:all .4s cubic-bezier(.25,1,.5,1);max-height:0;opacity:0}.vip-collapse.open{max-height:800px;opacity:1}.vip-preview-area{background:#080808;border-bottom:1px solid #222;display:flex;flex-direction:column;height:320px}.vip-preview{position:relative;flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden}.vip-preview img{max-width:100%;max-height:100%;object-fit:contain;transition:transform .4s cubic-bezier(.25,1,.5,1);will-change:transform}.vip-thumb-row{display:none;gap:4px;padding:0 12px 12px;justify-content:center;background:#080808;flex-shrink:0}.vip-thumb-item{position:relative;width:50px;height:50px;border:1px solid #333;border-radius:4px;overflow:hidden;background:#111}.vip-thumb-item img{width:100%;height:100%;object-fit:cover}.vip-thumb-more{position:absolute;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;color:#00b4ff;font-size:12px;font-weight:bold;letter-spacing:1px}.vip-overlay{position:absolute;bottom:-1px;left:0;right:0;z-index:2;padding:35px 12px 12px;background:linear-gradient(to top,rgba(0,0,0,1) 0%,rgba(0,0,0,.9) 20%,transparent 100%);color:#fff;font-size:10px;letter-spacing:.5px;text-transform:uppercase;pointer-events:none;transform:translateZ(0)}.vip-btn{background:#1a1a1a;color:#aaa;border:none;padding:10px;cursor:pointer;font-size:9px;font-weight:600;letter-spacing:1px;transition:all .2s ease;text-align:left;display:flex;justify-content:space-between;width:100%;align-items:center;height:32px;box-sizing:border-box}.vip-btn:hover{background:#252525;color:#00b4ff}.vip-btn.active{color:#00b4ff;background:#1e2a30}.vip-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px;padding:12px;min-height:150px;max-height:300px;overflow-y:auto;background:#0f0f0f;align-content:start;position:relative}.vip-grid::-webkit-scrollbar{width:4px}.vip-grid::-webkit-scrollbar-thumb{background:#333;border-radius:2px}.vip-item{position:relative;width:100%;aspect-ratio:1/1;background:#1a1a1a;cursor:pointer;border:2px solid transparent;border-radius:4px;overflow:hidden;display:flex;align-items:center;justify-content:center;user-select:none;-webkit-user-drag:none;}.vip-item img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;}.vip-item:hover{filter:grayscale(0);transform:translateY(-2px)}.vip-item.selected{border-color:#00b4ff;box-shadow:0 0 8px rgba(0,180,255,.4)}.vip-msg{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#888;font-size:14px;padding:60px 20px;text-align:center;font-weight:500;letter-spacing:1px;text-transform:uppercase}.vip-bar-wrapper{position:relative;display:flex;align-items:center;height:32px;background:#1a1a1a}.vip-multi-toggle{position:absolute;right:32px;top:5px;bottom:0;width:28px;background:none;border:none;color:#555;cursor:pointer;font-size:12px;transition:all .2s;z-index:10;display:flex;align-items:center;justify-content:center;padding:0}.vip-multi-toggle.active{color:#00b4ff;text-shadow:0 0 5px rgba(0,180,255,.5)}.vip-multi-toggle:hover{color:#eee}.vip-icon-span{display:flex;align-items:center;justify-content:center;width:20px;height:100%}
+            .vip-modal-btn{position:absolute;top:5px;right:5px;height:30px;width:30px;background:#333;color:#fff;border-radius:3px;border:none;cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;z-index:10}.vip-modal-btn:hover{background:#00b4ff}
+            .vip-modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:10000}
+            .vip-modal-box{width: 85%; height: 85%;background:#1a1a1a;padding:25px;border:2px solid #00b4ff;border-radius:10px;box-shadow:0 0 20px rgba(0,180,255,0.3);color:#fff;font-size:14px;font-weight:bold;display:flex;flex-direction:column;gap:15px}
+            .vip-modal-grid-wrapper{ width: 100%; overflow-y: auto; border-top: 1px solid #333; padding-top: 10px; flex: 1; }
+            .vip-modal-footer{display:flex; gap:10px; padding-top:10px; border-top:1px solid #333; justify-content: flex-end;}
+            .vip-footer-btn{background:#2a2a2a; color:#aaa; border:1px solid #444; padding:8px 20px; border-radius:4px; cursor:pointer; font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; transition: all 0.2s;}
+            .vip-footer-btn:hover{background:#333; color:#fff; border-color:#666;}
+            .vip-footer-btn.active{background:#1e2a30; color:#00b4ff; border-color:#00b4ff; box-shadow: 0 0 8px rgba(0,180,255,0.2);}
+            .vip-footer-btn.close-btn:hover{background:#442222; color:#ff4b4b; border-color:#ff4b4b;}`,
             parent: document.head,
         });
     },
@@ -29,9 +38,101 @@ app.registerExtension({
         const previewImg = $el("img");
         const previewLab = $el("div.vip-overlay", { textContent: "No selection" });
         const thumbRow = $el("div.vip-thumb-row");
+        const gridView = $el("div.vip-grid");
+
+        const openModal = async () => {
+            if (!gridView.innerHTML || gridView.querySelector(".vip-msg")) {
+                await node.loadImages();
+            }
+
+            const modalGrid = gridView.cloneNode(true);
+            modalGrid.style.width = "100%";
+            modalGrid.style.maxHeight = "100%";
+            modalGrid.style.gridTemplateColumns = "repeat(auto-fill, minmax(180px, 1fr))";
+            
+            const modalTitle = $el("div", { textContent: "SELECT IMAGES" });
+
+            const footerMultiBtn = $el("button.vip-footer-btn", { 
+                textContent: multiSelectEnabled ? "MULTI-SELECT: ON" : "MULTI-SELECT: OFF",
+                onclick: () => {
+                    multiSelectEnabled = !multiSelectEnabled;
+                    btnMulti.classList.toggle("active", multiSelectEnabled);
+                    footerMultiBtn.classList.toggle("active", multiSelectEnabled);
+                    footerMultiBtn.textContent = multiSelectEnabled ? "MULTI-SELECT: ON" : "MULTI-SELECT: OFF";
+                }
+            });
+
+            if (multiSelectEnabled) footerMultiBtn.classList.add("active");
+
+            const footerCloseBtn = $el("button.vip-footer-btn.close-btn", { 
+                textContent: "CLOSE",
+                onclick: () => modalOverlay.remove()
+            });
+
+            const syncModalHighlights = () => {
+                const selections = getSelectedFiles();
+                modalGrid.querySelectorAll(".vip-item").forEach(item => {
+                    item.classList.toggle("selected", selections.includes(item._filename));
+                });
+                modalTitle.textContent = selections.length > 1 ? `${selections.length} FILES SELECTED` : (selections[0] || "NO SELECTION");
+            };
+
+            modalGrid.querySelectorAll(".vip-item").forEach((item, idx) => {
+                const originalItem = gridView.querySelectorAll(".vip-item")[idx];
+                item._filename = originalItem._filename;
+
+                let pressTimer;
+                const startPress = (e) => {
+                    pressTimer = setTimeout(() => {
+                        if (!multiSelectEnabled) {
+                            multiSelectEnabled = true;
+                            btnMulti.classList.add("active");
+                            footerMultiBtn.classList.add("active");
+                            footerMultiBtn.textContent = "MULTI-SELECT: ON";
+                        }
+                        originalItem.onclick(e);
+                        syncModalHighlights();
+                    }, 500);
+                };
+                const cancelPress = () => clearTimeout(pressTimer);
+
+                item.onmousedown = startPress;
+                item.ontouchstart = startPress;
+                item.onmouseup = cancelPress;
+                item.ontouchend = cancelPress;
+                item.onmouseleave = cancelPress;
+
+                item.onclick = (e) => {
+                    if (originalItem) originalItem.onclick(e);
+                    if (!multiSelectEnabled && !e.ctrlKey && !e.metaKey) {
+                        modalOverlay.remove();
+                    } else {
+                        syncModalHighlights();
+                    }
+                };
+            });
+
+            const modalOverlay = $el("div.vip-modal-overlay", {
+                onclick: (e) => { if(e.target === modalOverlay) modalOverlay.remove(); }
+            }, [
+                $el("div.vip-modal-box", [
+                    modalTitle,
+                    $el("div.vip-modal-grid-wrapper", [modalGrid]),
+                    $el("div.vip-modal-footer", [footerMultiBtn, footerCloseBtn])
+                ])
+            ]);
+            document.body.appendChild(modalOverlay);
+            syncModalHighlights();
+        };
+
+        const modalBtn = $el("button.vip-modal-btn", { 
+            textContent: "⛶",
+            onclick: (e) => { e.stopPropagation(); openModal(); }
+        });
+
         const previewColl = $el("div.vip-collapse.open", [
             $el("div.vip-preview-area", [
-                $el("div.vip-preview", [previewImg, previewLab]),
+                $el("div.vip-preview", [modalBtn, previewImg, previewLab]),
                 thumbRow
             ])
         ]);
@@ -40,12 +141,10 @@ app.registerExtension({
             innerHTML: `<span>PREVIEW</span><span class="vip-icon-span">▲</span>` 
         });
 
-        const gridView = $el("div.vip-grid");
         const gridColl = $el("div.vip-collapse", [gridView]);
         
         const btnMulti = $el("button.vip-multi-toggle", { 
             innerHTML: `⧉`,
-            title: "Toggle Multi-Select",
             onclick: (e) => {
                 e.stopPropagation();
                 multiSelectEnabled = !multiSelectEnabled;
@@ -59,6 +158,7 @@ app.registerExtension({
         const browseBar = $el("div.vip-bar-wrapper", [btnGrid, btnMulti]);
 
         let fitRafId;
+        let domWidget;
 
         const getSelectedFiles = () => {
             const val = imgWidget?.value || "";
@@ -109,16 +209,12 @@ app.registerExtension({
                     others.forEach((f, idx) => {
                         const isLastSlot = idx === 3;
                         const hasMore = selections.length > 5;
-                        
                         const t = $el("div.vip-thumb-item", [
                             $el("img", { src: `/visual_picker/view?folder_path=${encodeURIComponent(path)}&filename=${encodeURIComponent(f)}` })
                         ]);
-
                         if (isLastSlot && hasMore) {
-                            const moreCount = selections.length - 5;
-                            t.appendChild($el("div.vip-thumb-more", { textContent: `+${moreCount}` }));
+                            t.appendChild($el("div.vip-thumb-more", { textContent: `+${selections.length - 5}` }));
                         }
-
                         thumbRow.appendChild(t);
                     });
                 }
@@ -131,16 +227,12 @@ app.registerExtension({
         };
 
         const clearSync = () => {
-            if (node._vip_watcher) {
-                clearInterval(node._vip_watcher);
-                node._vip_watcher = null;
-            }
+            if (node._vip_watcher) { clearInterval(node._vip_watcher); node._vip_watcher = null; }
             if (node._vip_target_widget && node._vip_old_cb) {
                 node._vip_target_widget.callback = node._vip_old_cb;
                 node._vip_target_widget._vip_patched = false;
             }
             node._vip_target_widget = null;
-            node._vip_old_cb = null;
         };
 
         node.onConnectionsChange = function (type, index, connected, link_info) {
@@ -151,18 +243,10 @@ app.registerExtension({
                         const link = app.graph.links[link_info.id];
                         if (!link) return;
                         const originNode = app.graph.getNodeById(link.origin_id);
-                        
-                        if (!originNode || !originNode.widgets || originNode.widgets.length === 0) {
-                            setTimeout(() => node.onConnectionsChange(type, index, connected, link_info), 100);
-                            return;
-                        }
-
-                        const originWidget = originNode.widgets?.find(w => w.name === "folder_path") || originNode.widgets?.[0];
-                        if (!originWidget) return;
-
+                        if (!originNode?.widgets?.[0]) return;
+                        const originWidget = originNode.widgets.find(w => w.name === "folder_path") || originNode.widgets[0];
                         node._vip_target_widget = originWidget;
                         node._vip_old_cb = originWidget.callback;
-
                         const sync = (newVal) => {
                             if (pathWidget && newVal && pathWidget.value !== newVal) {
                                 pathWidget.value = newVal;
@@ -170,13 +254,11 @@ app.registerExtension({
                                 if (node.loadImages && gridColl.classList.contains("open")) node.loadImages();
                             }
                         };
-
                         originWidget.callback = function() {
                             const res = node._vip_old_cb ? node._vip_old_cb.apply(this, arguments) : undefined;
                             sync(this.value);
                             return res;
                         };
-
                         node._vip_watcher = setInterval(() => sync(originWidget.value), 250);
                         sync(originWidget.value);
                     }, 300);
@@ -187,21 +269,17 @@ app.registerExtension({
         btnPrev.onclick = () => { previewColl.classList.toggle("open"); update(); animateFit(); };
         btnGrid.onclick = () => {
             const open = gridColl.classList.toggle("open");
-            const iconSpan = btnGrid.querySelector("span:last-child");
-            iconSpan.style.color = open ? '#00b4ff' : ''; 
+            btnGrid.querySelector("span:last-child").style.color = open ? '#00b4ff' : ''; 
             if (open && !gridView.innerHTML && pathWidget?.value) node.loadImages();
             animateFit();
         };
 
         if (pathWidget) {
-            const oldCb = pathWidget.callback;
-            pathWidget.callback = function() {
-                if (oldCb) oldCb.apply(this, arguments);
+            pathWidget.callback = () => {
                 if (imgWidget) imgWidget.value = "";
                 gridView.replaceChildren();
                 if (gridColl.classList.contains("open")) node.loadImages();
-                update(); 
-                fit();
+                update(); fit();
             };
         }
 
@@ -215,23 +293,19 @@ app.registerExtension({
 
         const handleWheel = (e) => {
             if (gridView.contains(e.target)) {
-                e.stopPropagation(); 
-                e.preventDefault();
+                e.stopPropagation(); e.preventDefault();
                 gridView.scrollTop += e.deltaY;
             }
         };
         window.addEventListener("wheel", handleWheel, { capture: true, passive: false });
 
         const container = $el("div.vip-container", [btnPrev, previewColl, browseBar, gridColl]);
-        const domWidget = node.addDOMWidget("visualimagepicker_grid", "div", container);
+        domWidget = node.addDOMWidget("visualimagepicker_grid", "div", container);
 
         node.loadImages = async () => {
             const path = pathWidget?.value;
             const sort = sortWidget?.value || "newest_first";
-            if (!path) { 
-                gridView.innerHTML = `<div class="vip-msg"><span>⚠️</span><span>Empty path</span></div>`; 
-                return; 
-            }
+            if (!path) { gridView.innerHTML = `<div class="vip-msg"><span>⚠️</span><span>Empty path</span></div>`; return; }
             try {
                 const res = await api.fetchApi("/visual_picker/images", {
                     method: "POST",
@@ -247,30 +321,36 @@ app.registerExtension({
                     const item = $el("div.vip-item", {
                         onclick: (e) => {
                             let selections = getSelectedFiles();
-                            const isMulti = multiSelectEnabled || e.ctrlKey || e.metaKey;
-                            
+                            const isMulti = multiSelectEnabled || (e && (e.ctrlKey || e.metaKey));
                             if (isMulti) {
-                                if (selections.includes(f)) {
-                                    selections = selections.filter(s => s !== f);
-                                } else {
-                                    selections.push(f);
-                                }
+                                selections.includes(f) ? (selections = selections.filter(s => s !== f)) : selections.push(f);
                             } else {
                                 selections = [f];
                             }
-
                             imgWidget.value = selections.join("|||"); 
                             if (imgWidget.callback) imgWidget.callback(imgWidget.value); 
-
-                            gridView.querySelectorAll(".vip-item").forEach(i => {
-                                i.classList.toggle("selected", selections.includes(i._filename));
-                            });
-                            update();
-                            animateFit();
+                            gridView.querySelectorAll(".vip-item").forEach(i => i.classList.toggle("selected", selections.includes(i._filename)));
+                            update(); animateFit();
                         }
                     }, [$el("img", { src: `/visual_picker/view?folder_path=${encodeURIComponent(path)}&filename=${encodeURIComponent(f)}` })]);
                     
                     item._filename = f;
+                    let pressTimer;
+                    const startPress = (e) => {
+                        pressTimer = setTimeout(() => {
+                            if (!multiSelectEnabled) {
+                                multiSelectEnabled = true;
+                                btnMulti.classList.add("active");
+                            }
+                            item.onclick(e);
+                        }, 500);
+                    };
+                    const cancelPress = () => clearTimeout(pressTimer);
+                    item.onmousedown = startPress;
+                    item.ontouchstart = startPress;
+                    item.onmouseup = cancelPress;
+                    item.ontouchend = cancelPress;
+
                     if (currentSelections.includes(f)) item.classList.add("selected");
                     gridView.appendChild(item);
                 });
@@ -281,21 +361,11 @@ app.registerExtension({
         };
 
         node.onConfigure = function() {
-            const input = this.inputs?.find(i => i.name === "opt_folder_path") || this.inputs?.[0];
-            const hasLink = input && input.link !== null;
-
-            if (pathWidget?.value || hasLink) {
-                setTimeout(() => {
-                    update(); 
-                    if (pathWidget?.value && gridColl.classList.contains("open")) {
-                        node.loadImages();
-                    }
-                    fit();
-                }, 100); 
-            } else {
-                update();
+            setTimeout(() => {
+                update(); 
+                if (pathWidget?.value && gridColl.classList.contains("open")) node.loadImages();
                 fit();
-            }
+            }, 100);
         };
 
         node.onRemoved = () => {
