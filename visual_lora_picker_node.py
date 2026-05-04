@@ -34,11 +34,22 @@ async def get_loras(request):
     reverse = "desc" in sort_method or "newest" in sort_method or "recently" in sort_method
     files.sort(key=sort_keys.get(sort_method, sort_keys["newest_first"]), reverse=reverse)
 
+    img_extensions = [".webp", ".jpg", ".jpeg", ".png", ".gif"]
+
     result = {}
     for f in files:
         basename = os.path.basename(f)
         name_no_ext = os.path.splitext(basename)[0]
-        preview_file = name_no_ext + ".webp"
+        
+        preview_file = None
+        for ext in img_extensions:
+            potential_img = os.path.join(folder_path, name_no_ext + ext)
+            if os.path.exists(potential_img):
+                preview_file = name_no_ext + ext
+                break
+        
+        if not preview_file:
+            preview_file = name_no_ext + ".webp"
         
         result[basename] = {
             "filename": basename,

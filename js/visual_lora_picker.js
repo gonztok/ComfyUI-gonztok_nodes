@@ -75,7 +75,12 @@ app.registerExtension({
             const icon = previewColl.classList.contains("open") ? " ▲" : " ▼";
             if (path && file) {
                 const nameNoExt = file.replace(".safetensors", "");
-                previewImg.src = `/visual_picker/view_lora?folder_path=${encodeURIComponent(path)}&filename=${encodeURIComponent(nameNoExt)}.webp`;
+                const item = gridView.querySelector(`.vlp-item.selected img`);
+                if (item) {
+                    previewImg.src = item.src;
+                } else {
+                    previewImg.src = `/visual_picker/view_lora?folder_path=${encodeURIComponent(path)}&filename=${encodeURIComponent(nameNoExt)}.webp`;
+                }
                 btnPrev.textContent = nameNoExt.toUpperCase() + icon;
             } else {
                 previewImg.src = "/visual_picker/no-selection";
