@@ -66,19 +66,16 @@ app.registerExtension({
             signal: scrollController.signal 
         });
 
-        // --- HIJACK LOGIC FOR APP MODE PERSISTENCE ---
         let domWidget = node.widgets.find(w => w.name === "folder_picker_ui");
         
         if (domWidget) {
             domWidget.type = "div";
             domWidget.element = container;
             domWidget.draw = function(ctx, node, widget_width, y, widget_height) {
-                // Ensure the DOM element follows the LiteGraph layout
             };
         } else {
             domWidget = node.addDOMWidget("folder_picker_ui", "div", container);
         }
-        // --------------------------------------------
 
         node.loadFolders = async () => {
             if (!pathWidget) return;

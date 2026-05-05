@@ -53,8 +53,6 @@ async def get_placeholder(request):
     if os.path.exists(placeholder_path): return web.FileResponse(placeholder_path)
     return web.Response(status=404)
 
-# --- Node Class ---
-
 class VisualImagePicker:
     @classmethod
     def INPUT_TYPES(s):
