@@ -75,7 +75,7 @@ class VisualImagePicker:
     CATEGORY = "Utils"
     OUTPUT_NODE = True
 
-    def main_process(self, selected_image, sort_method, folder_path=DEFAULT_ASSETS, opt_folder_path=None):
+    def main_process(self, selected_image, sort_method, image_picker_ui, folder_path=DEFAULT_ASSETS, opt_folder_path=None):
         active_path = opt_folder_path if opt_folder_path is not None else folder_path
         if not active_path or not os.path.exists(active_path):
             active_path = DEFAULT_ASSETS

@@ -99,7 +99,7 @@ class VisualLoraPicker:
     CATEGORY = "Utils"
     OUTPUT_NODE = True
 
-    def process(self, folder_path, selected_lora, sort_method, opt_folder_path=None):
+    def process(self, folder_path, selected_lora, sort_method, lora_picker_ui, opt_folder_path=None):
         final_path = opt_folder_path if opt_folder_path is not None else folder_path
         
         if not selected_lora: 
