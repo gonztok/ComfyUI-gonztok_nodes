@@ -228,6 +228,7 @@ app.registerExtension({
             if (!domWidget) return;
             container.style.height = "auto";
             const h = container.scrollHeight;
+            if (!h) return; // container not yet visible; animateFit will retry next frame
             container.style.height = h + "px";
             domWidget.computeSize = () => [node.size[0], h];
             node.setSize([node.size[0], node.computeSize()[1]]);
@@ -464,9 +465,9 @@ app.registerExtension({
 
         node.onConfigure = function() {
             setTimeout(() => {
-                update(); 
+                update();
                 if (pathWidget?.value && gridColl.classList.contains("open")) node.loadImages();
-                fit();
+                animateFit();
             }, 100);
         };
 
@@ -477,6 +478,6 @@ app.registerExtension({
         };
         
         node.size = [350, 180];
-        setTimeout(() => { update(); fit(); }, 100);
+        setTimeout(() => { update(); animateFit(); }, 100);
     }
 });
