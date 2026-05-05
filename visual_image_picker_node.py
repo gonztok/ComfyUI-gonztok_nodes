@@ -63,6 +63,7 @@ class VisualImagePicker:
                 "folder_path": ("STRING", {"default": DEFAULT_ASSETS}),
                 "selected_image": ("STRING", {"default": ""}),
                 "sort_method": (["name_asc", "name_desc", "newest_first", "oldest_first", "recently_modified", "oldest_modified"], {"default": "newest_first"}),
+                "image_picker_ui": ("STRING", {"default": ""}),
             },
             "optional": {
                 "opt_folder_path": ("STRING", {"forceInput": True}),

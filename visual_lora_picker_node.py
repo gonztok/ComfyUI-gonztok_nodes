@@ -86,6 +86,7 @@ class VisualLoraPicker:
                 "folder_path": ("STRING", {"default": default_path}),
                 "selected_lora": ("STRING", {"default": ""}),
                 "sort_method": (["name_asc", "name_desc", "newest_first", "oldest_first", "recently_modified", "oldest_modified"], {"default": "newest_first"}),
+                "lora_picker_ui": ("STRING", {"default": ""}),
             },
             "optional": {
                 "opt_folder_path": ("STRING", {"forceInput": True}),

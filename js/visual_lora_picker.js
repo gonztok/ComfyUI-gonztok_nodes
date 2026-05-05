@@ -272,7 +272,16 @@ app.registerExtension({
         };
 
         const container = $el("div.vlp-container", [btnPrev, previewColl, btnGrid, gridColl]);
-        domWidget = node.addDOMWidget("lora_picker_ui", "div", container);
+        domWidget = node.widgets.find(w => w.name === "lora_picker_ui");
+        
+        if (domWidget) {
+            domWidget.type = "div"; 
+            domWidget.element = container;
+            domWidget.draw = (ctx, node, widget_width, y, widget_height) => {
+            };
+        } else {
+            domWidget = node.addDOMWidget("lora_picker_ui", "div", container);
+        }
 
         node.onConfigure = function() {
             if (update) update.apply(this);

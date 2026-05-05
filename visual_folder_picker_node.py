@@ -25,6 +25,7 @@ class VisualFolderPicker:
             "required": {
                 "folder_path": ("STRING", {"default": "./input"}),
                 "selected_folder": ("STRING", {"default": ""}),
+                "folder_picker_ui": ("STRING", {"default": ""}),
             }
         }
 

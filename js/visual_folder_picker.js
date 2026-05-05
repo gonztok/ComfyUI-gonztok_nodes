@@ -40,7 +40,7 @@ app.registerExtension({
         const folderWidget = node.widgets.find(w => w.name === "selected_folder");
 
         const gridView = $el("div.vfp-grid");
-        const pathDisplay = $el("div.vfp-path-display", { textContent: pathWidget.value });
+        const pathDisplay = $el("div.vfp-path-display", { textContent: pathWidget?.value || "" });
         
         const container = $el("div.vfp-container.is-collapsed", [
             $el("div.vfp-header", {
@@ -66,9 +66,22 @@ app.registerExtension({
             signal: scrollController.signal 
         });
 
-        node.addDOMWidget("folderpicker_ui", "div", container);
+        // --- HIJACK LOGIC FOR APP MODE PERSISTENCE ---
+        let domWidget = node.widgets.find(w => w.name === "folder_picker_ui");
+        
+        if (domWidget) {
+            domWidget.type = "div";
+            domWidget.element = container;
+            domWidget.draw = function(ctx, node, widget_width, y, widget_height) {
+                // Ensure the DOM element follows the LiteGraph layout
+            };
+        } else {
+            domWidget = node.addDOMWidget("folder_picker_ui", "div", container);
+        }
+        // --------------------------------------------
 
         node.loadFolders = async () => {
+            if (!pathWidget) return;
             pathDisplay.textContent = pathWidget.value;
             try {
                 const res = await api.fetchApi("/visual_picker/folders", {
@@ -85,7 +98,7 @@ app.registerExtension({
                 const upItem = $el("div.vfp-item.up-dir", {
                     textContent: ".. [PARENT DIRECTORY]",
                     onclick: () => {
-                        folderWidget.value = ""; 
+                        if (folderWidget) folderWidget.value = ""; 
                         gridView.querySelectorAll(".vfp-item").forEach(i => i.classList.remove("selected"));
                         upItem.classList.add("selected");
                     },
@@ -95,7 +108,7 @@ app.registerExtension({
                         const lastIndex = Math.max(path.lastIndexOf("/"), path.lastIndexOf("\\"));
                         if (lastIndex !== -1) {
                             pathWidget.value = path.substring(0, lastIndex) || (path.startsWith("/") ? "/" : path.substring(0, lastIndex));
-                            folderWidget.value = "";
+                            if (folderWidget) folderWidget.value = "";
                             node.loadFolders();
                         }
                     }
@@ -107,7 +120,7 @@ app.registerExtension({
                         const item = $el("div.vfp-item", {
                             textContent: f,
                             onclick: () => {
-                                folderWidget.value = f;
+                                if (folderWidget) folderWidget.value = f;
                                 gridView.querySelectorAll(".vfp-item").forEach(i => i.classList.remove("selected"));
                                 item.classList.add("selected");
                             },
@@ -115,11 +128,11 @@ app.registerExtension({
                                 e.preventDefault();
                                 const sep = pathWidget.value.includes("\\") ? "\\" : "/";
                                 pathWidget.value = pathWidget.value.replace(/[\\/]$/, "") + sep + f;
-                                folderWidget.value = "";
+                                if (folderWidget) folderWidget.value = "";
                                 node.loadFolders();
                             }
                         });
-                        if (folderWidget.value === f) item.classList.add("selected");
+                        if (folderWidget && folderWidget.value === f) item.classList.add("selected");
                         gridView.appendChild(item);
                     });
                 }
@@ -139,13 +152,13 @@ app.registerExtension({
             this.loadFolders();
         };
 
-        pathWidget.callback = () => node.loadFolders();
+        if (pathWidget) pathWidget.callback = () => node.loadFolders();
 
         const origOnRemoved = node.onRemoved;
         node.onRemoved = () => {
             if (origOnRemoved) origOnRemoved.apply(node);
             scrollController.abort();
-            pathWidget.callback = null;
+            if (pathWidget) pathWidget.callback = null;
             node.loadFolders = null;
         };
         
