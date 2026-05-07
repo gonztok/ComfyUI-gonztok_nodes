@@ -63,6 +63,7 @@ app.registerExtension({
         const pathWidget = node.widgets.find(w => w.name === "folder_path");
         const imgWidget = node.widgets.find(w => w.name === "selected_image");
         const sortWidget = node.widgets.find(w => w.name === "sort_method");
+        let domWidget = node.widgets.find(w => w.name === "image_picker_ui");
 
         let multiSelectEnabled = false;
         const MOVE_THRESHOLD = 10;
@@ -110,8 +111,9 @@ app.registerExtension({
             };
 
             modalGrid.querySelectorAll(".vip-item").forEach((item, idx) => {
-                const originalItem = gridView.querySelectorAll(".vip-item")[idx];
-                item._filename = originalItem._filename;
+                const originalItems = gridView.querySelectorAll(".vip-item");
+                const originalItem = originalItems[idx];
+                item._filename = originalItem ? originalItem._filename : "";
 
                 let pressTimer;
                 let startX, startY;
@@ -131,7 +133,7 @@ app.registerExtension({
                             footerMultiBtn.classList.add("active");
                             footerMultiBtn.textContent = "MULTI-SELECT: ON";
                         }
-                        originalItem.onclick(e);
+                        if (originalItem) originalItem.onclick(e);
                         syncModalHighlights();
                     }, 500);
                 };
@@ -189,7 +191,7 @@ app.registerExtension({
             onclick: (e) => { e.stopPropagation(); openModal(); }
         });
 
-        const previewColl = $el("div.vip-collapse.open", [
+        const previewColl = $el("div.vip-collapse", [
             $el("div.vip-preview-area", [
                 $el("div.vip-preview", [modalBtn, previewImg, previewLab]),
                 thumbRow
@@ -216,8 +218,16 @@ app.registerExtension({
         });
         const browseBar = $el("div.vip-bar-wrapper", [btnGrid, btnMulti]);
 
+        const saveUiState = () => {
+            if (domWidget) {
+                domWidget.value = JSON.stringify({
+                    preview: previewColl.classList.contains("open"),
+                    grid: gridColl.classList.contains("open")
+                });
+            }
+        };
+
         let fitRafId;
-        let domWidget;
 
         const getSelectedFiles = () => {
             const val = imgWidget?.value || "";
@@ -225,13 +235,11 @@ app.registerExtension({
         };
 
         const fit = () => {
-            if (!domWidget) return;
             container.style.height = "auto";
             const h = container.scrollHeight;
-            if (!h) return; // container not yet visible; animateFit will retry next frame
-            container.style.height = h + "px";
+            if (!h) return;
             domWidget.computeSize = () => [node.size[0], h];
-            node.setSize([node.size[0], node.computeSize()[1]]);
+            node.setSize([node.size[0], domWidget.computeSize()[1]]);
             app.graph.setDirtyCanvas(true, true);
         };
 
@@ -326,12 +334,13 @@ app.registerExtension({
             }
         };
 
-        btnPrev.onclick = () => { previewColl.classList.toggle("open"); update(); animateFit(); };
+        btnPrev.onclick = () => { previewColl.classList.toggle("open"); update(); animateFit(); saveUiState(); };
         btnGrid.onclick = () => {
             const open = gridColl.classList.toggle("open");
             btnGrid.querySelector("span:last-child").style.color = open ? '#00b4ff' : ''; 
             if (open && !gridView.innerHTML && pathWidget?.value) node.loadImages();
             animateFit();
+            saveUiState();
         };
 
         if (pathWidget) {
@@ -360,13 +369,11 @@ app.registerExtension({
         window.addEventListener("wheel", handleWheel, { capture: true, passive: false });
 
         const container = $el("div.vip-container", [btnPrev, previewColl, browseBar, gridColl]);
-        domWidget = node.widgets.find(w => w.name === "image_picker_ui");
         
         if (domWidget) {
             domWidget.type = "div"; 
             domWidget.element = container;
-            domWidget.draw = (ctx, node, widget_width, y, widget_height) => {
-            };
+            domWidget.draw = () => {};
         } else {
             domWidget = node.addDOMWidget("image_picker_ui", "div", container);
         }
@@ -381,11 +388,23 @@ app.registerExtension({
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ folder_path: path, sort_method: sort })
                 });
+
+                if (res.status === 404) {
+                    gridView.innerHTML = `<div class="vip-msg"><span>📂</span><span>Path does not exist</span></div>`;
+                    fit(); return;
+                }
+                if (!res.ok) throw new Error();
+
                 const images = await res.json();
                 const files = Object.keys(images);
                 const currentSelections = getSelectedFiles();
                 
                 gridView.replaceChildren();
+                if (files.length === 0) {
+                    gridView.innerHTML = `<div class="vip-msg"><span>📷</span><span>No images found</span></div>`;
+                    fit(); return;
+                }
+
                 files.forEach(f => {
                     const item = $el("div.vip-item", {
                         onclick: (e) => {
@@ -413,7 +432,6 @@ app.registerExtension({
                         const pos = e.touches ? e.touches[0] : e;
                         startX = pos.clientX;
                         startY = pos.clientY;
-
                         pressTimer = setTimeout(() => {
                             holdFlag = true;
                             if (!multiSelectEnabled) {
@@ -427,12 +445,8 @@ app.registerExtension({
                     const checkMove = (e) => {
                         if (!pressTimer) return;
                         const pos = e.touches ? e.touches[0] : e;
-                        const dx = Math.abs(pos.clientX - startX);
-                        const dy = Math.abs(pos.clientY - startY);
-                        if (dx > MOVE_THRESHOLD || dy > MOVE_THRESHOLD) {
-                            clearTimeout(pressTimer);
-                            pressTimer = null;
-                        }
+                        const dx = Math.abs(pos.clientX - startX), dy = Math.abs(pos.clientY - startY);
+                        if (dx > MOVE_THRESHOLD || dy > MOVE_THRESHOLD) { clearTimeout(pressTimer); pressTimer = null; }
                     };
 
                     const cancelPress = () => { clearTimeout(pressTimer); pressTimer = null; };
@@ -447,10 +461,7 @@ app.registerExtension({
 
                     const originalOnclick = item.onclick;
                     item.onclick = (e) => {
-                        if (holdFlag) {
-                            holdFlag = false;
-                            return;
-                        }
+                        if (holdFlag) { holdFlag = false; return; }
                         originalOnclick(e);
                     };
 
@@ -464,9 +475,26 @@ app.registerExtension({
         };
 
         node.onConfigure = function() {
+            previewColl.style.transition = "none";
+            gridColl.style.transition = "none";
+
             setTimeout(() => {
+                if (domWidget && domWidget.value) {
+                    try {
+                        const state = JSON.parse(domWidget.value);
+                        previewColl.classList.toggle("open", !!state.preview);
+                        gridColl.classList.toggle("open", !!state.grid);
+                        btnGrid.querySelector("span:last-child").style.color = state.grid ? '#00b4ff' : '';
+                    } catch (e) {}
+                }
+                
                 update();
                 if (pathWidget?.value && gridColl.classList.contains("open")) node.loadImages();
+                
+                void previewColl.offsetHeight; 
+                previewColl.style.transition = "";
+                gridColl.style.transition = "";
+                
                 animateFit();
             }, 100);
         };

@@ -19,7 +19,8 @@ async def get_images(request):
     body = await request.json()
     folder_path = body.get("folder_path", DEFAULT_ASSETS)
     sort_method = body.get("sort_method", "newest_first")
-    if not os.path.isdir(folder_path): return web.json_response({})
+    if not os.path.isdir(folder_path): 
+        return web.Response(status=404, text="Directory not found")
     extensions = ["*.png", "*.jpg", "*.jpeg", "*.gif", "*.webp"]
     files = []
     for ext in extensions:

@@ -47,6 +47,7 @@ app.registerExtension({
         const pathWidget = node.widgets.find(w => w.name === "folder_path");
         const loraWidget = node.widgets.find(w => w.name === "selected_lora");
         const sortWidget = node.widgets.find(w => w.name === "sort_method");
+        let domWidget = node.widgets.find(w => w.name === "lora_picker_ui");
 
         const previewImg = $el("img");
         const gridView = $el("div.vlp-grid");
@@ -85,13 +86,21 @@ app.registerExtension({
             onclick: (e) => { e.stopPropagation(); openModal(); }
         });
 
-        const previewColl = $el("div.vlp-collapse.open", [$el("div.vlp-preview", [modalBtn, previewImg])]);
+        const previewColl = $el("div.vlp-collapse", [$el("div.vlp-preview", [modalBtn, previewImg])]);
         const btnPrev = $el("button.vlp-btn");
         const gridColl = $el("div.vlp-collapse", [gridView]);
         const btnGrid = $el("button.vlp-btn", { textContent: "LORA COLLECTION ▼" });
 
+        const saveUiState = () => {
+            if (domWidget) {
+                domWidget.value = JSON.stringify({
+                    preview: previewColl.classList.contains("open"),
+                    grid: gridColl.classList.contains("open")
+                });
+            }
+        };
+
         let fitRafId;
-        let domWidget;
 
         const fit = () => {
             if (!domWidget) return;
@@ -221,12 +230,13 @@ app.registerExtension({
         window.addEventListener("wheel", handleWheel, { capture: true, passive: false });
 
 
-        btnPrev.onclick = () => { previewColl.classList.toggle("open"); update(); animateFit(); };
+        btnPrev.onclick = () => { previewColl.classList.toggle("open"); update(); animateFit(); saveUiState();};
         btnGrid.onclick = () => {
             const open = gridColl.classList.toggle("open");
             btnGrid.innerHTML = `<span>BROWSE COLLECTION</span><span>${open?'✕':'⧉'}</span>`;
             if (open && pathWidget?.value) node.loadLoras();
             animateFit();
+            saveUiState();
         };
 
         node.loadLoras = async () => {
@@ -272,31 +282,51 @@ app.registerExtension({
         };
 
         const container = $el("div.vlp-container", [btnPrev, previewColl, btnGrid, gridColl]);
-        domWidget = node.widgets.find(w => w.name === "lora_picker_ui");
         
         if (domWidget) {
             domWidget.type = "div"; 
             domWidget.element = container;
-            domWidget.draw = (ctx, node, widget_width, y, widget_height) => {
-            };
+            domWidget.draw = () => {};
         } else {
             domWidget = node.addDOMWidget("lora_picker_ui", "div", container);
         }
 
         node.onConfigure = function() {
-            if (update) update.apply(this);
+            previewColl.style.transition = "none";
+            gridColl.style.transition = "none";
 
-            const hasWidgetValue = !!pathWidget?.value;
-            const input = this.inputs?.find(i => i.name === "opt_folder_path");
-            const hasLink = input && input.link !== null;
+            setTimeout(() => {
+                if (domWidget && domWidget.value) {
+                    try {
+                        const state = JSON.parse(domWidget.value);
+                        previewColl.classList.toggle("open", !!state.preview);
+                        gridColl.classList.toggle("open", !!state.grid);
+                        const isGridOpen = !!state.grid;
+                        btnGrid.innerHTML = `<span>BROWSE COLLECTION</span><span>${isGridOpen ? '✕' : '⧉'}</span>`;
+                    } catch (e) {
+                        console.error("VLP: Failed to parse UI state", e);
+                    }
+                }
+                if (update) update.apply(this);
 
-            if (hasWidgetValue || hasLink) {
-                setTimeout(() => {
-                    this.loadLoras();
-                    if (fit) fit.apply(this);
-                }, 50);
-            }
-        };        
+                const hasWidgetValue = !!pathWidget?.value;
+                const input = this.inputs?.find(i => i.name === "opt_folder_path");
+                const hasLink = input && input.link !== null;
+
+                if (hasWidgetValue || hasLink) {
+                    if (gridColl.classList.contains("open")) {
+                        this.loadLoras();
+                    }
+                }
+                
+                void previewColl.offsetHeight; 
+                previewColl.style.transition = "";
+                gridColl.style.transition = "";
+
+                if (fit) fit.apply(this);
+                if (typeof animateFit === "function") animateFit(); 
+            }, 100);
+        };  
 
         node.onRemoved = function() {
             cancelAnimationFrame(fitRafId);

@@ -13,10 +13,11 @@ if (!document.getElementById(styleId)) {
             .vfp-header { background:#1a1a1a; padding:8px; border-bottom:1px solid #333; text-align:center; cursor:pointer; transition: background 0.2s; }
             .vfp-header:hover { background: #222; }
             .vfp-path-display { font-size:10px; color:#00b4ff; font-family:monospace; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight: bold; }
-            .vfp-grid { display:flex; flex-direction:column; gap:0px; padding:0px; max-height:300px; overflow-y:auto; background:#0f0f0f; transition: max-height 0.3s ease-in-out; }
+            .vfp-collapse { overflow:hidden; transition: all .4s cubic-bezier(.25,1,.5,1); max-height:0; opacity:0; }
+            .vfp-collapse.open { max-height:800px; opacity:1; }
+            .vfp-grid { display:flex; flex-direction:column; gap:0px; padding:0px; max-height:300px; overflow-y:auto; background:#0f0f0f; }
             .vfp-grid::-webkit-scrollbar{width:12px}
             .vfp-grid::-webkit-scrollbar-thumb{background:#00b4ff;border-radius:6px;border:3px solid #0f0f0f}
-            .vfp-container.is-collapsed .vfp-grid { max-height: 0px; display: none; }                
             .vfp-item { padding:10px 15px; background:#1a1a1a; cursor:pointer; color:#ccc; font-family:monospace; font-size:11px; display:flex; align-items:center; user-select:none; border-bottom:1px solid #222; }
             .vfp-item:hover { background:#252525; color:#00b4ff; }
             .vfp-item.selected { background:#004466; color:#fff; border-left:4px solid #00b4ff; padding-left:11px; }
@@ -38,20 +39,49 @@ app.registerExtension({
 
         const pathWidget = node.widgets.find(w => w.name === "folder_path");
         const folderWidget = node.widgets.find(w => w.name === "selected_folder");
+        let domWidget = node.widgets.find(w => w.name === "folder_picker_ui");
 
         const gridView = $el("div.vfp-grid");
         const pathDisplay = $el("div.vfp-path-display", { textContent: pathWidget?.value || "" });
+        const gridColl = $el("div.vfp-collapse", [gridView]);
         
-        const container = $el("div.vfp-container.is-collapsed", [
+        const container = $el("div.vfp-container", [
             $el("div.vfp-header", {
                 onclick: () => {
-                    const isCollapsed = container.classList.toggle("is-collapsed");
-                    node.properties["isCollapsed"] = isCollapsed;
-                    node.setSize([node.size[0], isCollapsed ? 100 : 400]);
+                    gridColl.classList.toggle("open");
+                    saveUiState();
+                    animateFit();
                 }
             }, [pathDisplay]),
-            gridView
+            gridColl
         ]);
+
+        const saveUiState = () => {
+            if (domWidget) {
+                domWidget.value = JSON.stringify({
+                    grid: gridColl.classList.contains("open")
+                });
+            }
+        };
+
+        const fit = () => {
+            if (!domWidget) return;
+            container.style.height = "auto";
+            const h = container.scrollHeight;
+            if (!h) return;
+            domWidget.computeSize = () => [node.size[0], h];
+            node.setSize([node.size[0], domWidget.computeSize()[1]]);
+            app.graph.setDirtyCanvas(true, true);
+        };
+
+        const animateFit = (duration = 420) => {
+            const end = performance.now() + duration;
+            const tick = (now) => {
+                fit();
+                if (now < end) requestAnimationFrame(tick);
+            };
+            requestAnimationFrame(tick);
+        };
 
         const scrollController = new AbortController();
         window.addEventListener("wheel", (e) => {
@@ -66,13 +96,10 @@ app.registerExtension({
             signal: scrollController.signal 
         });
 
-        let domWidget = node.widgets.find(w => w.name === "folder_picker_ui");
-        
         if (domWidget) {
             domWidget.type = "div";
             domWidget.element = container;
-            domWidget.draw = function(ctx, node, widget_width, y, widget_height) {
-            };
+            domWidget.draw = () => {};
         } else {
             domWidget = node.addDOMWidget("folder_picker_ui", "div", container);
         }
@@ -88,9 +115,7 @@ app.registerExtension({
                 });
                 const data = await res.json();
                 
-                while (gridView.firstChild) {
-                    gridView.removeChild(gridView.firstChild);
-                }
+                gridView.replaceChildren();
 
                 const upItem = $el("div.vfp-item.up-dir", {
                     textContent: ".. [PARENT DIRECTORY]",
@@ -136,17 +161,23 @@ app.registerExtension({
             } catch (e) { 
                 gridView.innerHTML = `<div style="color:red;padding:10px;">Error</div>`; 
             }
+            fit();
         };
 
-        const origOnConfigure = node.onConfigure;
         node.onConfigure = function() {
-            if (origOnConfigure) origOnConfigure.apply(this, arguments);
-            
-            const shouldBeCollapsed = node.properties["isCollapsed"] !== false; 
-            container.classList.toggle("is-collapsed", shouldBeCollapsed);
-            
-            this.setSize([this.size[0], shouldBeCollapsed ? 100 : 400]);
-            this.loadFolders();
+            gridColl.style.transition = "none";
+            setTimeout(() => {
+                if (domWidget && domWidget.value) {
+                    try {
+                        const state = JSON.parse(domWidget.value);
+                        gridColl.classList.toggle("open", !!state.grid);
+                    } catch (e) {}
+                }
+                this.loadFolders();
+                void gridColl.offsetHeight;
+                gridColl.style.transition = "";
+                animateFit();
+            }, 100);
         };
 
         if (pathWidget) pathWidget.callback = () => node.loadFolders();
@@ -160,11 +191,9 @@ app.registerExtension({
         };
         
         node.size = [350, 100];
-        node.properties = node.properties || {};
-        if (node.properties["isCollapsed"] === undefined) node.properties["isCollapsed"] = true;
-
         setTimeout(() => {
             if (node.loadFolders) node.loadFolders();
+            animateFit();
         }, 100);
     }
 });
