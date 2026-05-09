@@ -39,7 +39,14 @@ app.registerExtension({
 
         const pathWidget = node.widgets.find(w => w.name === "folder_path");
         const folderWidget = node.widgets.find(w => w.name === "selected_folder");
-        let domWidget = node.widgets.find(w => w.name === "folder_picker_ui");
+
+        // Remove the placeholder STRING widget from Python — it's not a DOMWidgetImpl
+        // and won't be rendered by the Vue DomWidget component in 1.43+
+        const existingIdx = node.widgets.findIndex(w => w.name === "folder_picker_ui");
+        let uiStateValue = existingIdx >= 0 ? (node.widgets[existingIdx].value || "") : "";
+        if (existingIdx >= 0) node.widgets.splice(existingIdx, 1);
+
+        let domWidget = null;
 
         const gridView = $el("div.vfp-grid");
         const pathDisplay = $el("div.vfp-path-display", { textContent: pathWidget?.value || "" });
@@ -57,21 +64,17 @@ app.registerExtension({
         ]);
 
         const saveUiState = () => {
-            if (domWidget) {
-                domWidget.value = JSON.stringify({
-                    grid: gridColl.classList.contains("open")
-                });
-            }
+            uiStateValue = JSON.stringify({
+                grid: gridColl.classList.contains("open")
+            });
         };
 
         const fit = () => {
             if (!domWidget) return;
             container.style.height = "auto";
-            const h = container.scrollHeight;
-            if (!h) return;
-            domWidget.computeSize = () => [node.size[0], h];
-            node.setSize([node.size[0], domWidget.computeSize()[1]]);
-            app.graph.setDirtyCanvas(true, true);
+            if (!container.scrollHeight) return;
+            node.setSize([node.size[0], node.computeSize()[1]]);
+            (app.canvas ?? app.graph)?.setDirty?.(true, true);
         };
 
         const animateFit = (duration = 420) => {
@@ -96,13 +99,11 @@ app.registerExtension({
             signal: scrollController.signal 
         });
 
-        if (domWidget) {
-            domWidget.type = "div";
-            domWidget.element = container;
-            domWidget.draw = () => {};
-        } else {
-            domWidget = node.addDOMWidget("folder_picker_ui", "div", container);
-        }
+        domWidget = node.addDOMWidget("folder_picker_ui", "div", container, {
+            getValue: () => uiStateValue,
+            setValue: (v) => { uiStateValue = v; },
+            getHeight: () => container.scrollHeight + 12,
+        });
 
         node.loadFolders = async () => {
             if (!pathWidget) return;
@@ -167,9 +168,9 @@ app.registerExtension({
         node.onConfigure = function() {
             gridColl.style.transition = "none";
             setTimeout(() => {
-                if (domWidget && domWidget.value) {
+                if (uiStateValue) {
                     try {
-                        const state = JSON.parse(domWidget.value);
+                        const state = JSON.parse(uiStateValue);
                         gridColl.classList.toggle("open", !!state.grid);
                     } catch (e) {}
                 }
