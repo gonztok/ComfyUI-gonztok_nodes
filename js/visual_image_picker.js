@@ -63,7 +63,14 @@ app.registerExtension({
         const pathWidget = node.widgets.find(w => w.name === "folder_path");
         const imgWidget = node.widgets.find(w => w.name === "selected_image");
         const sortWidget = node.widgets.find(w => w.name === "sort_method");
-        let domWidget = node.widgets.find(w => w.name === "image_picker_ui");
+
+        // Remove the placeholder STRING widget from Python — it's not a DOMWidgetImpl
+        // and won't be rendered by the Vue DomWidget component in 1.43+
+        const existingIdx = node.widgets.findIndex(w => w.name === "image_picker_ui");
+        let uiStateValue = existingIdx >= 0 ? (node.widgets[existingIdx].value || "") : "";
+        if (existingIdx >= 0) node.widgets.splice(existingIdx, 1);
+
+        let domWidget = null;
 
         let multiSelectEnabled = false;
         const MOVE_THRESHOLD = 10;
@@ -219,12 +226,10 @@ app.registerExtension({
         const browseBar = $el("div.vip-bar-wrapper", [btnGrid, btnMulti]);
 
         const saveUiState = () => {
-            if (domWidget) {
-                domWidget.value = JSON.stringify({
-                    preview: previewColl.classList.contains("open"),
-                    grid: gridColl.classList.contains("open")
-                });
-            }
+            uiStateValue = JSON.stringify({
+                preview: previewColl.classList.contains("open"),
+                grid: gridColl.classList.contains("open")
+            });
         };
 
         let fitRafId;
@@ -238,9 +243,9 @@ app.registerExtension({
             container.style.height = "auto";
             const h = container.scrollHeight;
             if (!h) return;
-            domWidget.computeSize = () => [node.size[0], h];
-            node.setSize([node.size[0], domWidget.computeSize()[1]]);
-            app.graph.setDirtyCanvas(true, true);
+            container.style.setProperty("--comfy-widget-height", h + "px");
+            node.setSize([node.size[0], h]);
+            (app.canvas ?? app.graph)?.setDirty?.(true, true);
         };
 
         const animateFit = (duration = 420) => {
@@ -369,14 +374,11 @@ app.registerExtension({
         window.addEventListener("wheel", handleWheel, { capture: true, passive: false });
 
         const container = $el("div.vip-container", [btnPrev, previewColl, browseBar, gridColl]);
-        
-        if (domWidget) {
-            domWidget.type = "div"; 
-            domWidget.element = container;
-            domWidget.draw = () => {};
-        } else {
-            domWidget = node.addDOMWidget("image_picker_ui", "div", container);
-        }
+
+        domWidget = node.addDOMWidget("image_picker_ui", "div", container, {
+            getValue: () => uiStateValue,
+            setValue: (v) => { uiStateValue = v; },
+        });
 
         node.loadImages = async () => {
             const path = pathWidget?.value;
@@ -479,9 +481,9 @@ app.registerExtension({
             gridColl.style.transition = "none";
 
             setTimeout(() => {
-                if (domWidget && domWidget.value) {
+                if (uiStateValue) {
                     try {
-                        const state = JSON.parse(domWidget.value);
+                        const state = JSON.parse(uiStateValue);
                         previewColl.classList.toggle("open", !!state.preview);
                         gridColl.classList.toggle("open", !!state.grid);
                         btnGrid.querySelector("span:last-child").style.color = state.grid ? '#00b4ff' : '';
