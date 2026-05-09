@@ -243,8 +243,8 @@ app.registerExtension({
             container.style.height = "auto";
             const h = container.scrollHeight;
             if (!h) return;
-            container.style.setProperty("--comfy-widget-height", h + "px");
-            node.setSize([node.size[0], h]);
+            container.style.setProperty("--comfy-widget-height", (h + 12) + "px");
+            node.setSize([node.size[0], node.computeSize()[1]]);
             (app.canvas ?? app.graph)?.setDirty?.(true, true);
         };
 
