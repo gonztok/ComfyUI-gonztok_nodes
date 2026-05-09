@@ -241,9 +241,7 @@ app.registerExtension({
 
         const fit = () => {
             container.style.height = "auto";
-            const h = container.scrollHeight;
-            if (!h) return;
-            container.style.setProperty("--comfy-widget-height", (h + 12) + "px");
+            if (!container.scrollHeight) return;
             node.setSize([node.size[0], node.computeSize()[1]]);
             (app.canvas ?? app.graph)?.setDirty?.(true, true);
         };
@@ -378,6 +376,7 @@ app.registerExtension({
         domWidget = node.addDOMWidget("image_picker_ui", "div", container, {
             getValue: () => uiStateValue,
             setValue: (v) => { uiStateValue = v; },
+            getHeight: () => container.scrollHeight + 12,
         });
 
         node.loadImages = async () => {
