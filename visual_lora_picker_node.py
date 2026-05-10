@@ -65,11 +65,17 @@ async def view_preview(request):
     no_preview = os.path.join(NODE_ROOT, "assets", "no-preview.jpg")
 
     if not filename or not folder_path:
-        return web.FileResponse(no_preview) if os.path.exists(no_preview) else web.Response(status=404)
+        return web.FileResponse(no_preview)
     
-    image_path = os.path.abspath(os.path.join(folder_path, filename))
-    if os.path.exists(image_path):
-        return web.FileResponse(image_path)
+    base_name = os.path.splitext(filename)[0]
+    full_base_path = os.path.join(folder_path, base_name)
+    img_extensions = [".webp", ".jpg", ".jpeg", ".png", ".gif"]
+    
+    for ext in img_extensions:
+        potential_img = os.path.abspath(full_base_path + ext)
+        if os.path.exists(potential_img) and os.path.isfile(potential_img):
+            return web.FileResponse(potential_img)
+    
     return web.FileResponse(no_preview)
 
 @PromptServer.instance.routes.get("/visual_picker/no-selection")

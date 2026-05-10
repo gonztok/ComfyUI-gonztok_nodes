@@ -132,7 +132,7 @@ app.registerExtension({
                 if (item) {
                     previewImg.src = item.src;
                 } else {
-                    previewImg.src = `/visual_picker/view_lora?folder_path=${encodeURIComponent(path)}&filename=${encodeURIComponent(nameNoExt)}.webp`;
+                    previewImg.src = `/visual_picker/view_lora?folder_path=${encodeURIComponent(path)}&filename=${encodeURIComponent(file)}`;
                 }
                 btnPrev.textContent = nameNoExt.toUpperCase() + icon;
             } else {
