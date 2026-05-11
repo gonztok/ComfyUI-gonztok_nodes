@@ -30,12 +30,12 @@ app.registerExtension({
                 .vlp-modal-btn{position:absolute;top:5px;right:5px;height:30px;background:#333;color:#fff;border-radius:3px;border:none;cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;z-index:10}
                 .vlp-modal-btn:hover{background:#00b4ff}
                 .vlp-modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:10000}
-                .vlp-modal-box{width: 80%; height: 80%;background:#1a1a1a;padding:30px;border:2px solid #00b4ff;border-radius:10px;box-shadow:0 0 20px rgba(0,180,255,0.3);color:#fff;font-size:14px;font-weight:bold;display:flex;flex-direction:column;align-items:center;gap:15px}
-                .vlp-modal-box img{max-width:80vw;max-height:50vh;object-fit:contain;border-radius:4px}
+                .vlp-modal-box{width: 95%; height: 95%;background:#1a1a1a;padding:30px;border:2px solid #00b4ff;border-radius:10px;box-shadow:0 0 20px rgba(0,180,255,0.3);color:#fff;font-size:14px;font-weight:bold;display:flex;flex-direction:column;align-items:center;gap:15px}
                 .vlp-modal-grid-wrapper{ width: 100%; overflow-y: auto; border-top: 1px solid #333; padding-top: 10px; }
                 .vlp-modal-grid-wrapper::-webkit-scrollbar{width:12px}
                 .vlp-modal-grid-wrapper::-webkit-scrollbar-thumb{background:#00b4ff;border-radius:6px;border:3px solid #1a1a1a}
                 .vlp-modal-box .vlp-overlay{ font-size:12px; }
+                .vlp-modal-grid-wrapper .vlp-grid { max-height: none !important; }
             `,
             parent: document.head,
         });
@@ -53,28 +53,33 @@ app.registerExtension({
         const gridView = $el("div.vlp-grid");
         
         const openModal = () => {
-            const modalGrid = gridView.cloneNode(true);
-            modalGrid.style.width = "100%";
-            modalGrid.style.maxHeight = "100%";
-            modalGrid.style.gridTemplateColumns = "repeat(auto-fill, minmax(240px, 1fr))";
-            
-            modalGrid.querySelectorAll(".vlp-item").forEach((item, idx) => {
-                item.style.width = "auto";
-                item.style.maxWidth = "360px";
-                item.style.justifySelf = "centrer";
-                item.style.width = "100%"
-                item.onclick = () => {
-                    const originalItems = gridView.querySelectorAll(".vlp-item");
-                    if(originalItems[idx]) originalItems[idx].click();
-                    modalOverlay.remove();
-                };
-            });
+            const modalGrid = $el("div.vlp-grid");
+            modalGrid.style.gridTemplateColumns = "repeat(auto-fill, minmax(180px, 1fr))";
+
+            const populate = () => {
+                modalGrid.innerHTML = "";
+                gridView.querySelectorAll(".vlp-item").forEach((item, idx) => {
+                    const modalItem = item.cloneNode(true);
+                    modalItem.onclick = () => {
+                        const originalItems = gridView.querySelectorAll(".vlp-item");
+                        if(originalItems[idx]) originalItems[idx].click();
+                        modalOverlay.remove();
+                    };
+                    modalGrid.appendChild(modalItem);
+                });
+            };
+
+            if (!gridView.querySelector(".vlp-item") && pathWidget?.value) {
+                node.loadLoras().then(() => populate());
+            } else {
+                populate();
+            }
 
             const modalOverlay = $el("div.vlp-modal-overlay", {
                 onclick: (e) => { if(e.target === modalOverlay) modalOverlay.remove(); }
             }, [
                 $el("div.vlp-modal-box", [
-                    $el("div", { textContent: "Selected: " + loraWidget?.value?.replace(".safetensors", "").toUpperCase() || "NO LORA SELECTED" }),
+                    $el("div", { textContent: "Selected: " + (loraWidget?.value?.replace(".safetensors", "").toUpperCase() || "NO LORA") }),
                     $el("div.vlp-modal-grid-wrapper", [modalGrid])
                 ])
             ]);
@@ -126,10 +131,12 @@ app.registerExtension({
             const path = pathWidget?.value;
             const file = loraWidget?.value;
             const icon = previewColl.classList.contains("open") ? " ▲" : " ▼";
-            if (path && file) {
+
+            if (path && file && file !== "") {
                 const nameNoExt = file.replace(".safetensors", "");
                 const item = gridView.querySelector(`.vlp-item.selected img`);
-                if (item) {
+                
+                if (item && item.src) {
                     previewImg.src = item.src;
                 } else {
                     previewImg.src = `/visual_picker/view_lora?folder_path=${encodeURIComponent(path)}&filename=${encodeURIComponent(file)}`;

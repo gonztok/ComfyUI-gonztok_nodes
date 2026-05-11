@@ -42,7 +42,7 @@ app.registerExtension({
                 .vip-modal-btn{position:absolute;top:5px;right:5px;height:30px;width:30px;background:#333;color:#fff;border-radius:3px;border:none;cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;z-index:10}
                 .vip-modal-btn:hover{background:#00b4ff}
                 .vip-modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:10000}
-                .vip-modal-box{width: 85%; height: 85%;background:#1a1a1a;padding:25px;border:2px solid #00b4ff;border-radius:10px;box-shadow:0 0 20px rgba(0,180,255,0.3);color:#fff;font-size:14px;font-weight:bold;display:flex;flex-direction:column;gap:15px}
+                .vip-modal-box{width: 95%; height: 95%;background:#1a1a1a;padding:25px;border:2px solid #00b4ff;border-radius:10px;box-shadow:0 0 20px rgba(0,180,255,0.3);color:#fff;font-size:14px;font-weight:bold;display:flex;flex-direction:column;gap:15px}
                 .vip-modal-grid-wrapper{ width: 100%; overflow-y: auto; border-top: 1px solid #333; padding-top: 10px; flex: 1; }
                 .vip-modal-grid-wrapper::-webkit-scrollbar{width:12px}
                 .vip-modal-grid-wrapper::-webkit-scrollbar-thumb{background:#00b4ff;border-radius:6px;border:3px solid #1a1a1a}
