@@ -39,6 +39,7 @@ app.registerExtension({
 
         const pathWidget = node.widgets.find(w => w.name === "folder_path");
         const folderWidget = node.widgets.find(w => w.name === "selected_folder");
+        const sortWidget = node.widgets.find(w => w.name === "sort_method");
 
         // Remove the placeholder STRING widget from Python — it's not a DOMWidgetImpl
         // and won't be rendered by the Vue DomWidget component in 1.43+
@@ -106,13 +107,14 @@ app.registerExtension({
         });
 
         node.loadFolders = async () => {
+            const sort = sortWidget?.value || "newest_first";
             if (!pathWidget) return;
             pathDisplay.textContent = pathWidget.value;
             try {
                 const res = await api.fetchApi("/visual_picker/folders", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ folder_path: pathWidget.value })
+                    body: JSON.stringify({ folder_path: pathWidget.value, sort_method: sort })
                 });
                 const data = await res.json();
                 
@@ -182,6 +184,14 @@ app.registerExtension({
         };
 
         if (pathWidget) pathWidget.callback = () => node.loadFolders();
+
+        if (sortWidget) {
+            const oldSortCb = sortWidget.callback;
+            sortWidget.callback = function() {
+                if (oldSortCb) oldSortCb.apply(this, arguments);
+                if (gridColl.classList.contains("open")) node.loadFolders();
+            };
+        } 
 
         const origOnRemoved = node.onRemoved;
         node.onRemoved = () => {
