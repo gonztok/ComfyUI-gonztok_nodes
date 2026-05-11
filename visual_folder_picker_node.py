@@ -48,7 +48,7 @@ class VisualFolderPicker:
     OUTPUT_NODE = True
     DESCRIPTION = "Provides a visual interface to browse and select subfolders within a directory, returning both the absolute path and the specific folder name."
     
-    def main_process(self, folder_path, folder_picker_ui, selected_folder):
+    def main_process(self, folder_path, folder_picker_ui, selected_folder, sort_method):
         full_path = os.path.abspath(folder_path)
         folder_name = os.path.basename(full_path)
         return (full_path, folder_name)
