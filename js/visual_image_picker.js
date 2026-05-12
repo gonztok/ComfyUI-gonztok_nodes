@@ -80,6 +80,60 @@ app.registerExtension({
         const thumbRow = $el("div.vip-thumb-row");
         const gridView = $el("div.vip-grid");
 
+        const hoverPreview = $el("div", {
+            style: {
+                position: "fixed",
+                display: "none",
+                zIndex: 10001,
+                pointerEvents: "none",
+                border: "2px solid #00b4ff",
+                borderRadius: "4px",
+                backgroundColor: "transparent",
+                boxShadow: "0 0 20px rgba(0,0,0,0.8)",
+                // Use fit-content so the width collapses for portraits
+                width: "fit-content",
+                height: "fit-content",
+                maxWidth: "500px",
+                maxHeight: "500px",
+                lineHeight: "0",
+                overflow: "hidden"
+            }
+        }, [
+            $el("img", {
+                style: {
+                    display: "block",
+                    // Allow the image's natural aspect ratio to set the size
+                    width: "auto",
+                    height: "auto",
+                    maxWidth: "500px",
+                    maxHeight: "500px"
+                }
+            })
+        ]);
+        document.body.appendChild(hoverPreview);
+
+        const showPreview = (src) => {
+            const pImg = hoverPreview.querySelector("img");
+            pImg.src = src;
+            hoverPreview.style.display = "block";
+        };
+
+        const updateHoverPos = (e) => {
+            const offset = 20;
+            // Get the actual rendered size of the preview
+            const rect = hoverPreview.getBoundingClientRect();
+            
+            let x = e.clientX + offset;
+            let y = e.clientY + offset;
+
+            // Boundary checks using the dynamic width/height
+            if (x + rect.width > window.innerWidth) x = e.clientX - rect.width - offset;
+            if (y + rect.height > window.innerHeight) y = e.clientY - rect.height - offset;
+
+            hoverPreview.style.left = `${x}px`;
+            hoverPreview.style.top = `${y}px`;
+        };
+
         const openModal = async () => {
             if (!gridView.innerHTML || gridView.querySelector(".vip-msg")) {
                 await node.loadImages();
@@ -178,6 +232,22 @@ app.registerExtension({
                         syncModalHighlights();
                     }
                 };
+
+                item.addEventListener("mouseenter", () => {
+                    const gridImg = item.querySelector("img");
+                    if (gridImg && gridImg.src) {
+                        showPreview(gridImg.src);
+                    }
+                });
+
+                item.addEventListener("mousemove", updateHoverPos);
+
+                item.addEventListener("mouseleave", () => {
+                    hoverPreview.style.display = "none";
+                    // Clear src so the old dimensions don't linger for the next hover
+                    hoverPreview.querySelector("img").removeAttribute("src");
+                });
+
             });
 
             const modalOverlay = $el("div.vip-modal-overlay", {
@@ -423,6 +493,21 @@ app.registerExtension({
                         }
                     }, [$el("img", { src: `/visual_picker/view?folder_path=${encodeURIComponent(path)}&filename=${encodeURIComponent(f)}` })]);
                     
+                    item.addEventListener("mouseenter", () => {
+                        const gridImg = item.querySelector("img");
+                        if (gridImg && gridImg.src) {
+                            showPreview(gridImg.src);
+                        }
+                    });
+
+                    item.addEventListener("mousemove", updateHoverPos);
+
+                    item.addEventListener("mouseleave", () => {
+                        hoverPreview.style.display = "none";
+                        // Clear src so the old dimensions don't linger for the next hover
+                        hoverPreview.querySelector("img").removeAttribute("src");
+                    });
+
                     item._filename = f;
                     let pressTimer;
                     let startX, startY;
