@@ -110,6 +110,12 @@ app.registerExtension({
                 }
             })
         ]);
+        const hideHoverPreview = () => {
+            if (hoverPreview) {
+                hoverPreview.style.display = "none";
+                hoverPreview.querySelector("img").removeAttribute("src");
+            }
+        };
         document.body.appendChild(hoverPreview);
 
         const showPreview = (src) => {
@@ -149,6 +155,7 @@ app.registerExtension({
             const footerMultiBtn = $el("button.vip-footer-btn", { 
                 textContent: multiSelectEnabled ? "MULTI-SELECT: ON" : "MULTI-SELECT: OFF",
                 onclick: () => {
+                    hideHoverPreview();
                     multiSelectEnabled = !multiSelectEnabled;
                     btnMulti.classList.toggle("active", multiSelectEnabled);
                     footerMultiBtn.classList.toggle("active", multiSelectEnabled);
@@ -160,7 +167,10 @@ app.registerExtension({
 
             const footerCloseBtn = $el("button.vip-footer-btn.close-btn", { 
                 textContent: "CLOSE",
-                onclick: () => modalOverlay.remove()
+                onclick: () => {
+                    hideHoverPreview(); // Cleanup
+                    modalOverlay.remove();
+                }
             });
 
             const syncModalHighlights = () => {
@@ -225,6 +235,7 @@ app.registerExtension({
                         holdFlag = false;
                         return;
                     }
+                    hideHoverPreview();
                     if (originalItem) originalItem.onclick(e);
                     if (!multiSelectEnabled && !e.ctrlKey && !e.metaKey) {
                         modalOverlay.remove();
@@ -251,7 +262,12 @@ app.registerExtension({
             });
 
             const modalOverlay = $el("div.vip-modal-overlay", {
-                onclick: (e) => { if(e.target === modalOverlay) modalOverlay.remove(); }
+                onclick: (e) => { 
+                    if(e.target === modalOverlay) {
+                        hideHoverPreview(); // Cleanup
+                        modalOverlay.remove(); 
+                    }
+                }
             }, [
                 $el("div.vip-modal-box", [
                     modalTitle,
@@ -479,6 +495,7 @@ app.registerExtension({
                 files.forEach(f => {
                     const item = $el("div.vip-item", {
                         onclick: (e) => {
+                            hideHoverPreview();
                             let selections = getSelectedFiles();
                             const isMulti = multiSelectEnabled || (e && (e.ctrlKey || e.metaKey));
                             if (isMulti) {

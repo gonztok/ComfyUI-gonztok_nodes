@@ -83,6 +83,12 @@ app.registerExtension({
                 }
             })
         ]);
+        const hideHoverPreview = () => {
+        if (hoverPreview) {
+            hoverPreview.style.display = "none";
+            hoverPreview.querySelector("img").removeAttribute("src");
+        }
+        };
         document.body.appendChild(hoverPreview);
 
         const showPreview = (src) => {
@@ -116,6 +122,7 @@ app.registerExtension({
                 gridView.querySelectorAll(".vlp-item").forEach((item, idx) => {
                     const modalItem = item.cloneNode(true);
                     modalItem.onclick = () => {
+                        hideHoverPreview();
                         const originalItems = gridView.querySelectorAll(".vlp-item");
                         if(originalItems[idx]) originalItems[idx].click();
                         modalOverlay.remove();
@@ -148,7 +155,12 @@ app.registerExtension({
             }
 
             const modalOverlay = $el("div.vlp-modal-overlay", {
-                onclick: (e) => { if(e.target === modalOverlay) modalOverlay.remove(); }
+                onclick: (e) => { 
+                    if(e.target === modalOverlay) {
+                        hideHoverPreview(); // Cleanup
+                        modalOverlay.remove(); 
+                    }
+                }
             }, [
                 $el("div.vlp-modal-box", [
                     $el("div", { textContent: "Selected: " + (loraWidget?.value?.replace(".safetensors", "").toUpperCase() || "NO LORA") }),
@@ -341,6 +353,7 @@ app.registerExtension({
                     const data = loras[f];
                     const item = $el("div.vlp-item", {
                         onclick: () => {
+                            hideHoverPreview();
                             loraWidget.value = f;
                             if (loraWidget.callback) loraWidget.callback(f);
                             gridView.querySelectorAll(".vlp-item").forEach(i => i.classList.remove("selected"));
