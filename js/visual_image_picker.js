@@ -63,7 +63,6 @@ app.registerExtension({
         const pathWidget = node.widgets.find(w => w.name === "folder_path");
         const imgWidget = node.widgets.find(w => w.name === "selected_image");
         const sortWidget = node.widgets.find(w => w.name === "sort_method");
-
         // Remove the placeholder STRING widget from Python — it's not a DOMWidgetImpl
         // and won't be rendered by the Vue DomWidget component in 1.43+
         const existingIdx = node.widgets.findIndex(w => w.name === "image_picker_ui");
@@ -277,6 +276,7 @@ app.registerExtension({
             ]);
             document.body.appendChild(modalOverlay);
             syncModalHighlights();
+            scrollToSelected(modalGrid);
         };
 
         const modalBtn = $el("button.vip-modal-btn", { 
@@ -314,7 +314,7 @@ app.registerExtension({
         const saveUiState = () => {
             uiStateValue = JSON.stringify({
                 preview: previewColl.classList.contains("open"),
-                grid: gridColl.classList.contains("open")
+                grid: gridColl.classList.contains("open"),
             });
         };
 
@@ -571,6 +571,7 @@ app.registerExtension({
                     if (currentSelections.includes(f)) item.classList.add("selected");
                     gridView.appendChild(item);
                 });
+                scrollToSelected(gridView);
             } catch (e) {
                 gridView.innerHTML = `<div class="vip-msg"><span>🚫</span><span>Access error</span></div>`;
             }
@@ -600,6 +601,27 @@ app.registerExtension({
                 
                 animateFit();
             }, 100);
+        };
+
+        const scrollToSelected = (container) => {
+            const selections = getSelectedFiles();
+            if (selections.length === 0) return;
+            
+            // Target the last item in the selection array
+            const lastSelectedFile = selections[selections.length - 1];
+            
+            // Find the specific item in this container by its stored filename
+            const items = container.querySelectorAll(".vip-item");
+            const targetItem = Array.from(items).find(item => item._filename === lastSelectedFile);
+
+            if (targetItem) {
+                setTimeout(() => {
+                    targetItem.scrollIntoView({
+                        behavior: "smooth",
+                        block: "center"
+                    });
+                }, 100);
+            }
         };
 
         node.onRemoved = () => {

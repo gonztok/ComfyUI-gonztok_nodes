@@ -116,7 +116,6 @@ app.registerExtension({
         const openModal = () => {
             const modalGrid = $el("div.vlp-grid");
             modalGrid.style.gridTemplateColumns = "repeat(auto-fill, minmax(180px, 1fr))";
-
             const populate = () => {
                 modalGrid.innerHTML = "";
                 gridView.querySelectorAll(".vlp-item").forEach((item, idx) => {
@@ -129,16 +128,16 @@ app.registerExtension({
                     };
                     modalGrid.appendChild(modalItem);
 
-                    item.addEventListener("mouseenter", () => {
-                        const gridImg = item.querySelector("img");
+                    modalItem.addEventListener("mouseenter", () => {
+                        const gridImg = modalItem.querySelector("img");
                         if (gridImg && gridImg.src) {
                             showPreview(gridImg.src);
                         }
                     });
 
-                    item.addEventListener("mousemove", updateHoverPos);
+                    modalItem.addEventListener("mousemove", updateHoverPos);
 
-                    item.addEventListener("mouseleave", () => {
+                    modalItem.addEventListener("mouseleave", () => {
                         hoverPreview.style.display = "none";
                         // Clear src so the old dimensions don't linger for the next hover
                         hoverPreview.querySelector("img").removeAttribute("src");
@@ -153,6 +152,7 @@ app.registerExtension({
             } else {
                 populate();
             }
+            scrollToSelected(modalGrid);
 
             const modalOverlay = $el("div.vlp-modal-overlay", {
                 onclick: (e) => { 
@@ -184,7 +184,7 @@ app.registerExtension({
             if (domWidget) {
                 domWidget.value = JSON.stringify({
                     preview: previewColl.classList.contains("open"),
-                    grid: gridColl.classList.contains("open")
+                    grid: gridColl.classList.contains("open"),
                 });
             }
         };
@@ -387,6 +387,7 @@ app.registerExtension({
                 gridView.innerHTML = `<div class="vlp-msg"><span>🚫</span><span>Access error</span></div>`;
             }
             fit();
+            scrollToSelected(gridView);
         };
 
         const container = $el("div.vlp-container", [btnPrev, previewColl, btnGrid, gridColl]);
@@ -435,6 +436,18 @@ app.registerExtension({
                 if (typeof animateFit === "function") animateFit(); 
             }, 100);
         };  
+        
+        const scrollToSelected = (container) => {
+        const selectedItem = container.querySelector(".vlp-item.selected");
+        if (selectedItem) {
+            setTimeout(() => {
+                selectedItem.scrollIntoView({
+                    behavior: "smooth",
+                    block: "center"
+                });
+            }, 50);
+        }
+        };
 
         node.onRemoved = function() {
             cancelAnimationFrame(fitRafId);
