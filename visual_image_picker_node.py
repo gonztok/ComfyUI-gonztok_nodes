@@ -83,12 +83,12 @@ class VisualImagePicker:
 
         selected_files = [f.strip() for f in selected_image.split("|||") if f.strip()]
 
-        if not selected_files:
-            return ([], [], [])
-
         image_list = []
         name_list = []
         ext_list = []
+
+        if not selected_files:
+            return (image_list, name_list, ext_list)
 
         for file_name in selected_files:
             image_path = os.path.join(active_path, file_name)
@@ -109,7 +109,6 @@ class VisualImagePicker:
                 name_list.append(base_name)
                 ext_list.append(ext.lstrip('.'))
 
-        if not image_list:
-            raise ValueError("No valid images selected")
-
+        # Instead of raising ValueError, we return the empty lists gracefully.
+        # This prevents ComfyUI from crashing when no image is selected.
         return (image_list, name_list, ext_list)
