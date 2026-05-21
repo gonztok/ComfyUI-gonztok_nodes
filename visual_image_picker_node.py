@@ -2,6 +2,7 @@ import os
 import glob
 import torch
 import numpy as np
+import json
 from PIL import Image, ImageOps, ImageSequence
 import folder_paths
 from server import PromptServer
@@ -13,6 +14,37 @@ DEFAULT_ASSETS = os.path.join(NODE_ROOT, "assets", "gallery")
 
 if not os.path.exists(DEFAULT_ASSETS):
     os.makedirs(DEFAULT_ASSETS, exist_ok=True)
+
+def clean_metadata_value(val):
+    """Safely unwraps double-serialized strings, arrays, numbers, and nested dicts."""
+    if isinstance(val, str):
+        val_stripped = val.strip()
+        # Check if it looks like a stringified JSON list or object
+        if (val_stripped.startswith("[") and val_stripped.endswith("]")) or \
+           (val_stripped.startswith("{") and val_stripped.endswith("}")):
+            try:
+                return clean_metadata_value(json.loads(val_stripped))
+            except:
+                pass
+        
+        # Check if it's a string containing a literal quoted string (e.g., '"value"')
+        if val_stripped.startswith('"') and val_stripped.endswith('"'):
+            try:
+                return clean_metadata_value(json.loads(val_stripped))
+            except:
+                # Fallback if json.loads fails but quotes exist
+                return val_stripped[1:-1]
+        
+        # Check if it's a digit wrapped in a string
+        if val_stripped.isdigit():
+            return int(val_stripped)
+            
+    elif isinstance(val, list):
+        return [clean_metadata_value(item) for item in val]
+    elif isinstance(val, dict):
+        return {k: clean_metadata_value(v) for k, v in val.items()}
+        
+    return val
 
 @PromptServer.instance.routes.post("/visual_picker/images")
 async def get_images(request):
@@ -69,9 +101,9 @@ class VisualImagePicker:
             }
         }
 
-    RETURN_TYPES = ("IMAGE", "STRING", "STRING")
-    RETURN_NAMES = ("images", "filenames", "extensions")
-    OUTPUT_IS_LIST = (True, True, True)
+    RETURN_TYPES = ("IMAGE", "STRING", "STRING", "DICT")
+    RETURN_NAMES = ("images", "filenames", "extensions", "extra_metadata")
+    OUTPUT_IS_LIST = (True, True, True, True)
     FUNCTION = "main_process"
     CATEGORY = "Utils"
     OUTPUT_NODE = True
@@ -86,9 +118,10 @@ class VisualImagePicker:
         image_list = []
         name_list = []
         ext_list = []
+        dict_list = []
 
         if not selected_files:
-            return (image_list, name_list, ext_list)
+            return (image_list, name_list, ext_list, dict_list)
 
         for file_name in selected_files:
             image_path = os.path.join(active_path, file_name)
@@ -98,6 +131,35 @@ class VisualImagePicker:
             img = node_helpers.pillow(Image.open, image_path)
             base_name, ext = os.path.splitext(file_name)
             
+            meta_dict = {}
+            
+            raw_pnginfo = img.info.get("extra_pnginfo", {})
+            if isinstance(raw_pnginfo, str):
+                try:
+                    raw_pnginfo = json.loads(raw_pnginfo)
+                except json.JSONDecodeError:
+                    raw_pnginfo = {}
+
+            if isinstance(raw_pnginfo, dict):
+                meta_dict = {k: v for k, v in raw_pnginfo.items() if k not in ("workflow", "prompt")}
+
+            if not meta_dict:
+                meta_dict = {k: v for k, v in img.info.items() if k not in ("workflow", "prompt", "extra_pnginfo")}
+
+            if len(meta_dict) == 1 and "value" in meta_dict:
+                try:
+                    meta_dict = json.loads(meta_dict["value"])
+                except:
+                    pass
+            elif "metadata_extra" in meta_dict:
+                try:
+                    meta_dict = json.loads(meta_dict["metadata_extra"]) if isinstance(meta_dict["metadata_extra"], str) else meta_dict["metadata_extra"]
+                except:
+                    pass
+
+            # Clean up the double-serialized keys and values before sending out
+            meta_dict = clean_metadata_value(meta_dict)
+
             frames = []
             for frame in ImageSequence.Iterator(img):
                 frame = node_helpers.pillow(ImageOps.exif_transpose, frame).convert("RGB")
@@ -108,7 +170,6 @@ class VisualImagePicker:
                 image_list.append(torch.cat(frames, dim=0))
                 name_list.append(base_name)
                 ext_list.append(ext.lstrip('.'))
+                dict_list.append(meta_dict)
 
-        # Instead of raising ValueError, we return the empty lists gracefully.
-        # This prevents ComfyUI from crashing when no image is selected.
-        return (image_list, name_list, ext_list)
+        return (image_list, name_list, ext_list, dict_list)
