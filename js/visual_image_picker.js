@@ -72,6 +72,8 @@ app.registerExtension({
         let domWidget = null;
 
         let multiSelectEnabled = false;
+        node._vip_needs_refresh = false;
+        let refreshActiveModal = null;
         const MOVE_THRESHOLD = 10;
 
         const previewImg = $el("img");
@@ -144,12 +146,124 @@ app.registerExtension({
                 await node.loadImages();
             }
 
-            const modalGrid = gridView.cloneNode(true);
-            modalGrid.style.width = "100%";
-            modalGrid.style.maxHeight = "100%";
-            modalGrid.style.gridTemplateColumns = "repeat(auto-fill, minmax(180px, 1fr))";
-            
             const modalTitle = $el("div", { textContent: "SELECT IMAGES" });
+            const modalGridWrapper = $el("div.vip-modal-grid-wrapper");
+
+            // Define how we build/rebuild the grid items inside the modal
+            const buildModalGrid = () => {
+                // Clear out any old grid if we are re-cloning
+                modalGridWrapper.replaceChildren();
+
+                const modalGrid = gridView.cloneNode(true);
+                modalGrid.style.width = "100%";
+                modalGrid.style.maxHeight = "100%";
+                modalGrid.style.gridTemplateColumns = "repeat(auto-fill, minmax(180px, 1fr))";
+
+                // Bind all your existing item events...
+                modalGrid.querySelectorAll(".vip-item").forEach((item, idx) => {
+                    const originalItems = gridView.querySelectorAll(".vip-item");
+                    const originalItem = originalItems[idx];
+                    item._filename = originalItem ? originalItem._filename : "";
+
+                    let pressTimer;
+                    let startX, startY;
+                    let holdFlag = false;
+
+                    const startPress = (e) => {
+                        holdFlag = false;
+                        const pos = e.touches ? e.touches[0] : e;
+                        startX = pos.clientX;
+                        startY = pos.clientY;
+
+                        pressTimer = setTimeout(() => {
+                            holdFlag = true;
+                            if (!multiSelectEnabled) {
+                                multiSelectEnabled = true;
+                                btnMulti.classList.add("active");
+                                footerMultiBtn.classList.add("active");
+                                footerMultiBtn.textContent = "MULTI-SELECT: ON";
+                            }
+                            if (originalItem) originalItem.onclick(e);
+                            syncModalHighlights();
+                        }, 500);
+                    };
+
+                    const checkMove = (e) => {
+                        if (!pressTimer) return;
+                        const pos = e.touches ? e.touches[0] : e;
+                        const dx = Math.abs(pos.clientX - startX);
+                        const dy = Math.abs(pos.clientY - startY);
+                        if (dx > MOVE_THRESHOLD || dy > MOVE_THRESHOLD) {
+                            clearTimeout(pressTimer);
+                            pressTimer = null;
+                        }
+                    };
+
+                    const cancelPress = () => { clearTimeout(pressTimer); pressTimer = null; };
+
+                    item.onmousedown = startPress;
+                    item.ontouchstart = startPress;
+                    item.onmousemove = checkMove;
+                    item.ontouchmove = checkMove;
+                    item.onmouseup = cancelPress;
+                    item.ontouchend = cancelPress;
+                    item.onmouseleave = cancelPress;
+
+                    item.onclick = (e) => {
+                        if (holdFlag) {
+                            holdFlag = false;
+                            return;
+                        }
+                        hideHoverPreview();
+                        if (originalItem) originalItem.onclick(e);
+                        if (!multiSelectEnabled && !e.ctrlKey && !e.metaKey) {
+                            cleanupModal();
+                        } else {
+                            syncModalHighlights();
+                        }
+                    };
+
+                    item.addEventListener("mouseenter", () => {
+                        const gridImg = item.querySelector("img");
+                        if (gridImg && gridImg.src) {
+                            showPreview(gridImg.src);
+                        }
+                    });
+
+                    item.addEventListener("mousemove", updateHoverPos);
+
+                    item.addEventListener("mouseleave", () => {
+                        hoverPreview.style.display = "none";
+                        hoverPreview.querySelector("img").removeAttribute("src");
+                    });
+                });
+
+                modalGridWrapper.appendChild(modalGrid);
+                syncModalHighlights();
+                scrollToSelected(modalGrid);
+            };
+
+            const syncModalHighlights = () => {
+                const selections = getSelectedFiles();
+                const wrapper = modalGridWrapper.querySelector(".vip-grid");
+                if (wrapper) {
+                    wrapper.querySelectorAll(".vip-item").forEach(item => {
+                        item.classList.toggle("selected", selections.includes(item._filename));
+                    });
+                }
+                modalTitle.textContent = selections.length > 1 ? `${selections.length} FILES SELECTED` : (selections[0] || "NO SELECTION");
+            };
+
+            // Setup our global handle so the execution listener can invoke a redraw
+            refreshActiveModal = async () => {
+                buildModalGrid();
+            };
+
+            const cleanupModal = () => {
+                hideHoverPreview();
+                refreshActiveModal = null; // Stop tracking the modal
+                modalOverlay.remove();
+            };
 
             const footerMultiBtn = $el("button.vip-footer-btn", { 
                 textContent: multiSelectEnabled ? "MULTI-SELECT: ON" : "MULTI-SELECT: OFF",
@@ -166,117 +280,27 @@ app.registerExtension({
 
             const footerCloseBtn = $el("button.vip-footer-btn.close-btn", { 
                 textContent: "CLOSE",
-                onclick: () => {
-                    hideHoverPreview(); // Cleanup
-                    modalOverlay.remove();
-                }
-            });
-
-            const syncModalHighlights = () => {
-                const selections = getSelectedFiles();
-                modalGrid.querySelectorAll(".vip-item").forEach(item => {
-                    item.classList.toggle("selected", selections.includes(item._filename));
-                });
-                modalTitle.textContent = selections.length > 1 ? `${selections.length} FILES SELECTED` : (selections[0] || "NO SELECTION");
-            };
-
-            modalGrid.querySelectorAll(".vip-item").forEach((item, idx) => {
-                const originalItems = gridView.querySelectorAll(".vip-item");
-                const originalItem = originalItems[idx];
-                item._filename = originalItem ? originalItem._filename : "";
-
-                let pressTimer;
-                let startX, startY;
-                let holdFlag = false;
-
-                const startPress = (e) => {
-                    holdFlag = false;
-                    const pos = e.touches ? e.touches[0] : e;
-                    startX = pos.clientX;
-                    startY = pos.clientY;
-
-                    pressTimer = setTimeout(() => {
-                        holdFlag = true;
-                        if (!multiSelectEnabled) {
-                            multiSelectEnabled = true;
-                            btnMulti.classList.add("active");
-                            footerMultiBtn.classList.add("active");
-                            footerMultiBtn.textContent = "MULTI-SELECT: ON";
-                        }
-                        if (originalItem) originalItem.onclick(e);
-                        syncModalHighlights();
-                    }, 500);
-                };
-
-                const checkMove = (e) => {
-                    if (!pressTimer) return;
-                    const pos = e.touches ? e.touches[0] : e;
-                    const dx = Math.abs(pos.clientX - startX);
-                    const dy = Math.abs(pos.clientY - startY);
-                    if (dx > MOVE_THRESHOLD || dy > MOVE_THRESHOLD) {
-                        clearTimeout(pressTimer);
-                        pressTimer = null;
-                    }
-                };
-
-                const cancelPress = () => { clearTimeout(pressTimer); pressTimer = null; };
-
-                item.onmousedown = startPress;
-                item.ontouchstart = startPress;
-                item.onmousemove = checkMove;
-                item.ontouchmove = checkMove;
-                item.onmouseup = cancelPress;
-                item.ontouchend = cancelPress;
-                item.onmouseleave = cancelPress;
-
-                item.onclick = (e) => {
-                    if (holdFlag) {
-                        holdFlag = false;
-                        return;
-                    }
-                    hideHoverPreview();
-                    if (originalItem) originalItem.onclick(e);
-                    if (!multiSelectEnabled && !e.ctrlKey && !e.metaKey) {
-                        modalOverlay.remove();
-                    } else {
-                        syncModalHighlights();
-                    }
-                };
-
-                item.addEventListener("mouseenter", () => {
-                    const gridImg = item.querySelector("img");
-                    if (gridImg && gridImg.src) {
-                        showPreview(gridImg.src);
-                    }
-                });
-
-                item.addEventListener("mousemove", updateHoverPos);
-
-                item.addEventListener("mouseleave", () => {
-                    hoverPreview.style.display = "none";
-                    // Clear src so the old dimensions don't linger for the next hover
-                    hoverPreview.querySelector("img").removeAttribute("src");
-                });
-
+                onclick: cleanupModal
             });
 
             const modalOverlay = $el("div.vip-modal-overlay", {
                 onclick: (e) => { 
                     if(e.target === modalOverlay) {
-                        hideHoverPreview(); // Cleanup
-                        modalOverlay.remove(); 
+                        cleanupModal();
                     }
                 }
             }, [
                 $el("div.vip-modal-box", [
                     modalTitle,
-                    $el("div.vip-modal-grid-wrapper", [modalGrid]),
+                    modalGridWrapper,
                     $el("div.vip-modal-footer", [footerMultiBtn, footerCloseBtn])
                 ])
             ]);
+
             document.body.appendChild(modalOverlay);
-            syncModalHighlights();
-            scrollToSelected(modalGrid);
+            
+            // Build the initial grid composition
+            buildModalGrid();
         };
 
         const modalBtn = $el("button.vip-modal-btn", { 
@@ -427,7 +451,14 @@ app.registerExtension({
         btnGrid.onclick = () => {
             const open = gridColl.classList.toggle("open");
             btnGrid.querySelector("span:last-child").style.color = open ? '#00b4ff' : ''; 
-            if (open && !gridView.innerHTML && pathWidget?.value) node.loadImages();
+            
+            // Force a reload if it's empty OR if an execution finished while it was closed
+            if (open && pathWidget?.value) {
+                if (!gridView.innerHTML || node._vip_needs_refresh) {
+                    node.loadImages();
+                    node._vip_needs_refresh = false; // Reset the flag
+                }
+            }
             animateFit();
             saveUiState();
         };
@@ -624,11 +655,38 @@ app.registerExtension({
             }
         };
 
+// --- Smart Refresh Flag on Execution ---
+        // --- Smart Refresh Flag on Execution (With Modal Support) ---
+        const handleExecutionFinished = async (e) => {
+            if (pathWidget?.value) {
+                if (gridColl.classList.contains("open") || refreshActiveModal) {
+                    // Fetch the fresh file arrays back into node state
+                    await node.loadImages();
+                    node._vip_needs_refresh = false;
+
+                    // If the full-screen modal is currently up, re-clone the grid elements right now
+                    if (refreshActiveModal) {
+                        refreshActiveModal();
+                    }
+                } else {
+                    // Everything is closed, flag it for later
+                    node._vip_needs_refresh = true;
+                }
+            }
+        };
+
+        api.addEventListener("executed", handleExecutionFinished);
+
         node.onRemoved = () => {
             cancelAnimationFrame(fitRafId);
             window.removeEventListener("wheel", handleWheel, { capture: true });
+            
+            // CRITICAL: Remove the execution listener to prevent memory leaks
+            api.removeEventListener("executed", handleExecutionFinished);
+            
             if (node._vip_watcher) clearInterval(node._vip_watcher);
         };
+        // ----------------------------------------
         
         node.size = [350, 180];
         setTimeout(() => { update(); animateFit(); }, 100);
