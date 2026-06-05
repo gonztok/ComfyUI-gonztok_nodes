@@ -8,6 +8,7 @@ import folder_paths
 from server import PromptServer
 from aiohttp import web
 import node_helpers
+import safetensors.torch
 
 NODE_ROOT = os.path.dirname(os.path.realpath(__file__))
 DEFAULT_ASSETS = os.path.join(NODE_ROOT, "assets", "gallery")
@@ -19,7 +20,6 @@ def clean_metadata_value(val):
     """Safely unwraps double-serialized strings, arrays, numbers, and nested dicts."""
     if isinstance(val, str):
         val_stripped = val.strip()
-        # Check if it looks like a stringified JSON list or object
         if (val_stripped.startswith("[") and val_stripped.endswith("]")) or \
            (val_stripped.startswith("{") and val_stripped.endswith("}")):
             try:
@@ -27,15 +27,12 @@ def clean_metadata_value(val):
             except:
                 pass
         
-        # Check if it's a string containing a literal quoted string (e.g., '"value"')
         if val_stripped.startswith('"') and val_stripped.endswith('"'):
             try:
                 return clean_metadata_value(json.loads(val_stripped))
             except:
-                # Fallback if json.loads fails but quotes exist
                 return val_stripped[1:-1]
         
-        # Check if it's a digit wrapped in a string
         if val_stripped.isdigit():
             return int(val_stripped)
             
@@ -101,9 +98,9 @@ class VisualImagePicker:
             }
         }
 
-    RETURN_TYPES = ("IMAGE", "STRING", "STRING", "DICT")
-    RETURN_NAMES = ("images", "filenames", "extensions", "extra_metadata")
-    OUTPUT_IS_LIST = (True, True, True, True)
+    RETURN_TYPES = ("IMAGE", "LATENT", "STRING", "STRING", "DICT")
+    RETURN_NAMES = ("images", "latents", "filenames", "extensions", "extra_metadata")
+    OUTPUT_IS_LIST = (True, True, True, True, True)
     FUNCTION = "main_process"
     CATEGORY = "Utils"
     OUTPUT_NODE = True
@@ -116,12 +113,13 @@ class VisualImagePicker:
         selected_files = [f.strip() for f in selected_image.split("|||") if f.strip()]
 
         image_list = []
+        latent_list = []
         name_list = []
         ext_list = []
         dict_list = []
 
         if not selected_files:
-            return (image_list, name_list, ext_list, dict_list)
+            return (image_list, latent_list, name_list, ext_list, dict_list)
 
         for file_name in selected_files:
             image_path = os.path.join(active_path, file_name)
@@ -157,8 +155,97 @@ class VisualImagePicker:
                 except:
                     pass
 
-            # Clean up the double-serialized keys and values before sending out
             meta_dict = clean_metadata_value(meta_dict)
+
+            # --- PREFIX-MAPPED LATENT LOADING SECTION ---
+            latent_path = os.path.join(active_path, f"latent_{base_name}.latent")
+            latent_data = None
+
+            print(f"[VisualImagePicker] Checking for prefix-mapped latent file at: {latent_path}")
+
+            if os.path.exists(latent_path):
+                import gzip
+                import io
+                import pickle
+                import safetensors.torch
+
+                # Strategy 1: Modern ComfyUI Safetensors Format
+                try:
+                    safetensor_data = safetensors.torch.load_file(latent_path, device="cpu")
+                    print(f"[VisualImagePicker] Successfully loaded as Safetensors file. Keys found: {list(safetensor_data.keys())}")
+                    
+                    target_tensor = None
+                    if "samples" in safetensor_data:
+                        target_tensor = safetensor_data["samples"]
+                    elif "latent_tensor" in safetensor_data:
+                        target_tensor = safetensor_data["latent_tensor"]
+                    elif len(safetensor_data) > 0:
+                        biggest_key = max(safetensor_data.keys(), key=lambda k: safetensor_data[k].numel())
+                        target_tensor = safetensor_data[biggest_key]
+
+                    if target_tensor is not None:
+                        if len(target_tensor.shape) == 1 or target_tensor.numel() == 0:
+                            print(f"[VisualImagePicker] WARNING: Target tensor is flat or empty. Shape: {target_tensor.shape}")
+                            target_tensor = None
+                        else:
+                            latent_data = {"samples": target_tensor}
+                            
+                except Exception as sf_e:
+                    print(f"[VisualImagePicker] Safetensors parsing bypassed/failed: {sf_e}")
+                    latent_data = None
+
+                # Strategy 2: Raw Pickle Deserialization Fallback
+                if latent_data is None:
+                    try:
+                        with open(latent_path, 'rb') as f:
+                            raw_load = pickle.load(f)
+                        print(f"[VisualImagePicker] Successfully loaded raw Pickle data.")
+                        if isinstance(raw_load, dict):
+                            for k in raw_load:
+                                if isinstance(raw_load[k], torch.Tensor):
+                                    raw_load[k] = raw_load[k].to("cpu")
+                    except Exception as pickle_e:
+                        print(f"[VisualImagePicker] Direct pickle load failed: {pickle_e}")
+                        raw_load = None
+
+                # Strategy 3: Gzip Compressed Fallback
+                if latent_data is None and raw_load is None:
+                    try:
+                        with gzip.open(latent_path, 'rb') as f:
+                            with io.BytesIO(f.read()) as bytes_io:
+                                raw_load = torch.load(bytes_io, map_location="cpu", weights_only=False)
+                        print(f"[VisualImagePicker] Successfully decompressed Gzip latent.")
+                    except Exception as gzip_e:
+                        print(f"[VisualImagePicker] Gzip decompression failed: {gzip_e}")
+                        raw_load = None
+
+                # Strategy 4: Standard Torch Load Fallback
+                if latent_data is None and raw_load is None:
+                    try:
+                        raw_load = torch.load(latent_path, map_location="cpu", weights_only=False)
+                        print(f"[VisualImagePicker] Loaded via standard torch.load fallback.")
+                    except Exception as torch_e:
+                        print(f"[VisualImagePicker] All loading strategies exhausted: {torch_e}")
+                        raw_load = None
+
+                # Process raw weights if parsed via pickling/torch strategies
+                if latent_data is None and raw_load is not None:
+                    if isinstance(raw_load, dict):
+                        if "samples" in raw_load:
+                            latent_data = {"samples": raw_load["samples"]}
+                        elif "latent_tensor" in raw_load:
+                            latent_data = {"samples": raw_load["latent_tensor"]}
+                    elif isinstance(raw_load, torch.Tensor):
+                        latent_data = {"samples": raw_load}
+
+                if latent_data is not None and len(latent_data['samples'].shape) > 1:
+                    print(f"[VisualImagePicker] Latent tensor verified successfully. Shape: {latent_data['samples'].shape}")
+                else:
+                    latent_data = None
+
+            if latent_data is None:
+                print(f"[VisualImagePicker] WARNING: No matching or valid 4D latent resolved. Generating placeholder tensor.")
+                latent_data = {"samples": torch.zeros([1, 4, 64, 64], dtype=torch.float32)}
 
             frames = []
             for frame in ImageSequence.Iterator(img):
@@ -168,8 +255,9 @@ class VisualImagePicker:
             
             if frames:
                 image_list.append(torch.cat(frames, dim=0))
+                latent_list.append(latent_data)
                 name_list.append(base_name)
                 ext_list.append(ext.lstrip('.'))
                 dict_list.append(meta_dict)
 
-        return (image_list, name_list, ext_list, dict_list)
+        return (image_list, latent_list, name_list, ext_list, dict_list)
